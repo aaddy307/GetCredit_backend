@@ -45,14 +45,14 @@ app.use(helmet({
 
 // CORS configuration
 const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['http://localhost:3000', 'http://localhost:3001'];
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : [];
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.some(o => origin.startsWith(o.replace(/\/$/, '')))) {
+    if (!origin || allowedOrigins.length === 0 || allowedOrigins.some(o => origin.startsWith(o.replace(/\/$/, '')))) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(null, false);
     }
   },
   credentials: true
