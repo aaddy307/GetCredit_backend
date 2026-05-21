@@ -10,9 +10,10 @@ exports.getAllBlogs = async (req, res) => {
     }
 
     if (search) {
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { excerpt: { $regex: search, $options: 'i' } }
+        { title: { $regex: escaped, $options: 'i' } },
+        { excerpt: { $regex: escaped, $options: 'i' } }
       ];
     }
 
@@ -137,12 +138,8 @@ exports.deleteBlog = async (req, res) => {
 
 exports.getBlogStats = async (req, res) => {
   try {
-    if (!req.admin) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
-    }
-
     const total = await Blog.countDocuments();
-    const categories = ['Home Loan', 'Education', 'LAP', 'Tips', 'Finance'];
+    const categories = ['Home Loan', 'Education', 'LAP', 'Personal Loan', 'Business Loan', 'Vehicle Loan', 'Tips', 'Finance'];
     const stats = {};
 
     for (const cat of categories) {

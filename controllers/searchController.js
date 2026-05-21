@@ -17,7 +17,7 @@ const globalSearch = async (req, res) => {
       return res.json({ success: true, results: [] });
     }
 
-    const searchRegex = new RegExp(q, 'i');
+    const searchRegex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
     const limit = 5;
 
     const searchQuery = {
@@ -47,23 +47,24 @@ const globalSearch = async (req, res) => {
 
     const results = [];
 
+    const modelLabels = ['Home Loan', 'LAP', 'Education Loan', 'Personal Loan', 'Business Loan', 'Vehicle Loan'];
+    const callbackIdx = 1 + emiModels.length;
+    const blogIdx = callbackIdx + 1;
+
     allSearches[0].forEach(lead => {
       results.push({ type: 'lead', title: lead.fullName, subtitle: `${lead.phone} • ${lead.city || 'N/A'}`, label: 'Lead' });
     });
 
-    for (let i = 0; i < 6; i++) {
-      const label = ['Home Loan', 'LAP', 'Education Loan', 'Personal Loan', 'Business Loan', 'Vehicle Loan'][i];
+    for (let i = 0; i < emiModels.length; i++) {
       allSearches[i + 1].forEach(e => {
-        results.push({ type: 'lead', title: e.fullName, subtitle: `${e.mobile || e.phone} • ${e.city || 'N/A'}`, label });
+        results.push({ type: 'lead', title: e.fullName, subtitle: `${e.mobile || e.phone} • ${e.city || 'N/A'}`, label: modelLabels[i] });
       });
     }
 
-    const callbacksIdx = 7;
-    allSearches[callbacksIdx].forEach(callback => {
+    allSearches[callbackIdx].forEach(callback => {
       results.push({ type: 'callback', title: callback.fullName, subtitle: `${callback.phone} • ${callback.email}` });
     });
 
-    const blogIdx = 8;
     allSearches[blogIdx].forEach(blog => {
       results.push({ type: 'blog', title: blog.title, subtitle: blog.category });
     });

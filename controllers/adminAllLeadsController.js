@@ -39,7 +39,7 @@ exports.getAllLeads = async (req, res) => {
     const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
     const skip = (pageNum - 1) * limitNum;
 
-    const searchRegex = search ? new RegExp(search, 'i') : null;
+    const searchRegex = search ? new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') : null;
 
     const buildQuery = (extraFields = []) => {
       const conditions = [];
@@ -49,7 +49,7 @@ exports.getAllLeads = async (req, res) => {
       }
       if (status && status !== 'All') conditions.push({ status });
       if (loanType && loanType !== 'All') conditions.push({ loanType });
-      if (source && source !== 'All') conditions.push({ leadSource: { $regex: source, $options: 'i' } });
+      if (source && source !== 'All') conditions.push({ leadSource: { $regex: source.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } });
       if (startDate || endDate) {
         const dateFilter = {};
         if (startDate) dateFilter.$gte = new Date(startDate);

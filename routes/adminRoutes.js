@@ -25,7 +25,7 @@ const checkFirstAdmin = async (req, res, next) => {
   next();
 };
 
-router.post('/login', authLimiter, login);
+router.post('/login', login); // rate-limited globally in server.js
 router.post('/logout', logout);
 router.post('/create', createLimiter, checkFirstAdmin, createAdmin);
 router.get('/profile', protect, getProfile);

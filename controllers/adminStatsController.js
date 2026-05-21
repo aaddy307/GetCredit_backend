@@ -17,28 +17,29 @@ const getTodayStats = async (req, res) => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const dateFilter = { createdAt: { $gte: today, $lt: tomorrow } };
 
-    const countPromises = [
+    const [todayEnquiries, ...todayEmiCounts] = await Promise.all([
       Enquiry.countDocuments(dateFilter),
       ...emiModels.map(m => m.countDocuments(dateFilter)),
-      CallbackRequest.countDocuments(dateFilter),
+    ]);
+    const todayCallbacks = await CallbackRequest.countDocuments(dateFilter);
+    const [totalEnquiries, ...totalEmiCounts] = await Promise.all([
       Enquiry.countDocuments(),
       ...emiModels.map(m => m.countDocuments()),
-      CallbackRequest.countDocuments(),
-    ];
+    ]);
+    const totalCallbacks = await CallbackRequest.countDocuments();
 
-    const counts = await Promise.all(countPromises);
-    const [todayEnq, ...rest] = counts;
-    const todayEmi = rest.slice(0, 6).reduce((a, b) => a + b, 0);
-    const todayCallbacks = rest[6];
-    const totalEnq = rest[7];
-    const totalEmi = rest.slice(8, 14).reduce((a, b) => a + b, 0);
-    const totalCallbacks = rest[14];
+    const todayEmi = todayEmiCounts.reduce((a, b) => a + b, 0);
+    const totalEmi = totalEmiCounts.reduce((a, b) => a + b, 0);
 
-    const todayLeads = todayEnq + todayEmi;
-    const totalLeads = totalEnq + totalEmi;
+    const todayLeads = todayEnquiries + todayEmi;
+    const totalLeads = totalEnquiries + totalEmi;
 
     const pendingCallbacks = await CallbackRequest.countDocuments({ status: 'Pending' });
-    const approvedLeads = await Enquiry.countDocuments({ status: 'Approved' });
+    const [enqApproved, ...emiApproved] = await Promise.all([
+      Enquiry.countDocuments({ status: 'Approved' }),
+      ...emiModels.map(m => m.countDocuments({ status: 'Approved' })),
+    ]);
+    const approvedLeads = enqApproved + emiApproved.reduce((a, b) => a + b, 0);
     const conversionRate = totalLeads > 0 ? Math.round((approvedLeads / totalLeads) * 100) : 0;
 
     res.json({

@@ -88,7 +88,10 @@ exports.createEnquiry = async (req, res) => {
     if (!calculatedEmi && loanAmount && interestRate && tenure) {
       const monthlyRate = interestRate / 12 / 100;
       const months = tenure * 12;
-      calculatedEmi = (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
+      const compoundFactor = Math.pow(1 + monthlyRate, months);
+      calculatedEmi = compoundFactor > 1
+        ? (loanAmount * monthlyRate * compoundFactor) / (compoundFactor - 1)
+        : loanAmount / months;
     }
 
     const enquiryData = {
@@ -125,7 +128,9 @@ exports.createEnquiry = async (req, res) => {
 
     const enquiry = await Enquiry.create(enquiryData);
 
-    sendCustomerEmail(email, fullName, loanType, calculatedEmi, tenure).catch(() => {});
+    if (!isCallbackRequest) {
+      sendCustomerEmail(email, fullName, loanType, calculatedEmi, tenure).catch(() => {});
+    }
     sendAdminNotification(enquiry).catch(() => {});
 
     res.status(201).json({
@@ -146,11 +151,12 @@ exports.getAllEnquiries = async (req, res) => {
     let query = {};
     
     if (search) {
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [
-        { fullName: { $regex: search, $options: 'i' } },
-        { phone: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { city: { $regex: search, $options: 'i' } }
+        { fullName: { $regex: escaped, $options: 'i' } },
+        { phone: { $regex: escaped, $options: 'i' } },
+        { email: { $regex: escaped, $options: 'i' } },
+        { city: { $regex: escaped, $options: 'i' } }
       ];
     }
     
@@ -163,7 +169,7 @@ exports.getAllEnquiries = async (req, res) => {
     }
     
     if (leadSource && leadSource !== 'All') {
-      query.leadSource = { $regex: leadSource, $options: 'i' };
+      query.leadSource = { $regex: leadSource.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
     }
     
     if (dateFrom || dateTo) {
