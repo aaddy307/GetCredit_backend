@@ -106,6 +106,11 @@ const sendCustomerEmail = async (email, name, loanType, emi, tenure) => {
       return;
     }
 
+    const isCallback = loanType === 'Callback Request';
+    const detailsHTML = emi && tenure
+      ? `<div class="card"><h3>Loan Summary</h3><div class="card-row"><span class="label">Loan Type</span><span class="value">${loanType}</span></div><div class="card-row"><span class="label">Monthly EMI</span><span class="emi-value">₹${Number(emi).toLocaleString()}</span></div><div class="card-row"><span class="label">Tenure</span><span class="value">${tenure} Years</span></div></div>`
+      : '';
+
     await resend.emails.send({
       from: FROM_ADDRESS,
       to: email,
@@ -138,6 +143,23 @@ const sendAdminNotification = async (enquiry) => {
       console.log('Resend not configured. Skipping admin notification.');
       return;
     }
+
+    const adminEmail = process.env.ADMIN_EMAIL || 'support@get-credit.in';
+    const isCallbackRequest = enquiry.loanType === 'Callback Request';
+
+    const content = `
+      <div class="card">
+        <h3>${isCallbackRequest ? 'New Callback Request' : 'New Enquiry Details'}</h3>
+        <div class="card-row"><span class="label">Name</span><span class="value">${enquiry.fullName || ''}</span></div>
+        <div class="card-row"><span class="label">Phone</span><span class="value">${enquiry.phone || enquiry.mobile || ''}</span></div>
+        <div class="card-row"><span class="label">Email</span><span class="value">${enquiry.email || ''}</span></div>
+        <div class="card-row"><span class="label">City</span><span class="value">${enquiry.city || ''}</span></div>
+        <div class="card-row"><span class="label">Loan Type</span><span class="value">${enquiry.loanType || ''}</span></div>
+        ${enquiry.loanAmount ? `<div class="card-row"><span class="label">Loan Amount</span><span class="value">₹${Number(enquiry.loanAmount).toLocaleString()}</span></div>` : ''}
+        ${enquiry.interestRate ? `<div class="card-row"><span class="label">Interest Rate</span><span class="value">${enquiry.interestRate}%</span></div>` : ''}
+        ${enquiry.tenure || enquiry.tenureYears ? `<div class="card-row"><span class="label">Tenure</span><span class="value">${enquiry.tenure || enquiry.tenureYears} Years</span></div>` : ''}
+        ${enquiry.emi || enquiry.calculatedEMI ? `<div class="card-row"><span class="label">EMI</span><span class="emi-value">₹${Number(enquiry.emi || enquiry.calculatedEMI).toLocaleString()}</span></div>` : ''}
+      </div>`;
 
     await resend.emails.send({
       from: FROM_ADDRESS,
