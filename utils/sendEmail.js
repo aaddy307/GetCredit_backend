@@ -123,7 +123,7 @@ const sendCustomerEmail = async (email, name, loanType, emi, tenure) => {
       ${detailsHTML}
       <div class="divider"></div>
       <p style="font-size:14px;">If you have any questions in the meantime, feel free to:</p>
-      <p style="font-size:14px;">📞 <strong>+91 98765 43210</strong> &nbsp;|&nbsp; ✉️ <strong>support@get-credit.in</strong></p>
+      <p style="font-size:14px;">📞 <strong>+91 7738205198</strong> / <strong>+91 8408926551</strong> / <strong>+91 8793604734</strong> &nbsp;|&nbsp; ✉️ <strong>support@get-credit.in</strong></p>
       <p>Warm regards,<br><strong>The ${BRAND.name} Team</strong></p>
     `),
   };
