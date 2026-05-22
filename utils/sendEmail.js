@@ -14,58 +14,77 @@ const BRAND = {
   text: '#4a4a4a',
   bg: '#ffffff',
   footerBg: '#1e1e32',
+  logo: 'https://get-credit.in/Logo.jpeg',
+  logoSrc: 'https://get-credit.in/Logo.jpeg',
+  phone1: '+91 7738205198',
+  phone2: '+91 8408926551',
+  phone3: '+91 8793604734',
+  email: 'support@get-credit.in',
 };
 
 const baseStyles = `
   body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f0f5; -webkit-font-smoothing: antialiased; }
   .wrapper { background: #f0f0f5; padding: 40px 16px; }
-  .container { max-width: 560px; margin: 0 auto; background: ${BRAND.bg}; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.08); }
-  .header { background: linear-gradient(135deg, ${BRAND.gold} 0%, ${BRAND.goldLight} 100%); padding: 36px 32px 32px; text-align: center; position: relative; }
+  .container { max-width: 600px; margin: 0 auto; background: ${BRAND.bg}; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.08); }
+  .header { background: linear-gradient(135deg, ${BRAND.gold} 0%, ${BRAND.goldLight} 100%); padding: 40px 32px 32px; text-align: center; position: relative; }
   .header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.15) 0%, transparent 50%); }
-  .header-logo { width: 52px; height: 52px; background: rgba(255,255,255,0.2); border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px; backdrop-filter: blur(4px); }
-  .header-logo span { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: -1px; }
-  .header h1 { position: relative; margin: 0; font-size: 26px; color: #fff; letter-spacing: -0.5px; font-weight: 700; }
-  .header p { position: relative; margin: 4px 0 0; font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 400; }
-  .body { padding: 36px 32px; color: ${BRAND.text}; font-size: 15px; line-height: 1.7; }
-  .body h2 { color: ${BRAND.dark}; font-size: 20px; margin: 0 0 12px; font-weight: 700; }
-  .card { background: #f8f8fc; border: 1px solid #e8e8f0; border-radius: 12px; padding: 24px; margin: 20px 0; }
-  .card h3 { margin: 0 0 16px; color: ${BRAND.goldDark}; font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-  .card-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
-  .card-row + .card-row { border-top: 1px solid #eeeef6; }
-  .label { color: #888; font-size: 13px; }
-  .value { color: ${BRAND.dark}; font-weight: 600; text-align: right; }
-  .emi-value { color: ${BRAND.goldDark}; font-weight: 700; font-size: 20px; }
-  .divider { height: 1px; background: linear-gradient(to right, transparent, #e0e0ea, transparent); margin: 24px 0; }
-  .contact-block { background: #f8f8fc; border-radius: 12px; padding: 20px 24px; margin: 20px 0; }
+  .header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 6px; background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent); }
+  .header-logo { display: inline-block; margin-bottom: 16px; }
+  .header-logo img { width: 64px; height: 64px; border-radius: 16px; display: block; object-fit: cover; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+  .header h1 { position: relative; margin: 0; font-size: 28px; color: #fff; letter-spacing: -0.5px; font-weight: 800; }
+  .header p { position: relative; margin: 6px 0 0; font-size: 15px; color: rgba(255,255,255,0.9); font-weight: 400; }
+  .body { padding: 36px 32px; color: ${BRAND.text}; font-size: 15px; line-height: 1.8; }
+  .body h2 { color: ${BRAND.dark}; font-size: 20px; margin: 0 0 8px; font-weight: 700; }
+  .greeting { font-size: 17px; color: ${BRAND.dark}; font-weight: 600; margin: 0 0 16px; }
+  .card { background: #fafafe; border: 1px solid #e8e8f0; border-radius: 14px; padding: 24px; margin: 24px 0; }
+  .card-header { margin-bottom: 20px; padding-bottom: 14px; border-bottom: 2px solid ${BRAND.gold}; }
+  .card-header h3 { margin: 0; color: ${BRAND.goldDark}; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+  .card-body { display: grid; gap: 12px; }
+  .card-row { display: flex; justify-content: space-between; align-items: center; }
+  .card-row + .card-row { padding-top: 12px; border-top: 1px solid #eeeef6; }
+  .label { color: #888; font-size: 13px; font-weight: 500; }
+  .value { color: ${BRAND.dark}; font-weight: 600; text-align: right; font-size: 14px; }
+  .emi-value { color: ${BRAND.goldDark}; font-weight: 800; font-size: 22px; letter-spacing: -0.3px; }
+  .divider { height: 1px; background: linear-gradient(to right, transparent, #e0e0ea, transparent); margin: 28px 0; }
+  .contact-block { background: #f8f9fe; border: 1px solid #e8e8f0; border-radius: 14px; padding: 20px 24px; margin: 20px 0; }
   .contact-block p { margin: 6px 0; font-size: 14px; color: ${BRAND.text}; }
-  .contact-block strong { color: ${BRAND.dark}; }
-  table { width: 100%; border-collapse: separate; border-spacing: 0; margin: 16px 0; font-size: 14px; border-radius: 10px; overflow: hidden; border: 1px solid #e8e8f0; }
-  th { background: ${BRAND.gold}; color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
-  td { padding: 12px 16px; border-bottom: 1px solid #eeeef6; color: ${BRAND.text}; }
-  tr:last-child td { border-bottom: none; }
-  td:first-child { font-weight: 500; color: #888; }
-  td:last-child { font-weight: 600; color: ${BRAND.dark}; }
+  .contact-block strong { color: ${BRAND.dark}; font-weight: 600; }
+  .contact-icon { display: inline-block; width: 20px; text-align: center; margin-right: 4px; }
   .badge { display: inline-block; background: rgba(201,168,76,0.12); color: ${BRAND.goldDark}; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; }
-  .cta-wrapper { text-align: center; margin: 24px 0 8px; }
-  .cta { display: inline-block; background: linear-gradient(135deg, ${BRAND.gold}, ${BRAND.goldLight}); color: #fff; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 16px rgba(201,168,76,0.3); }
-  .cta:hover { box-shadow: 0 6px 24px rgba(201,168,76,0.4); }
-  .action-required { text-align: center; color: #d43b3b; font-weight: 700; font-size: 14px; margin-top: 20px; padding: 12px; background: #fef2f2; border-radius: 10px; }
-  .footer { background: ${BRAND.footerBg}; padding: 28px 32px; text-align: center; }
-  .footer-links { margin: 0 0 12px; font-size: 13px; }
-  .footer-links a { color: rgba(255,255,255,0.6); text-decoration: none; margin: 0 12px; transition: color 0.2s; }
+  .cta-wrapper { text-align: center; margin: 28px 0 12px; }
+  .cta { display: inline-block; background: linear-gradient(135deg, ${BRAND.gold}, ${BRAND.goldLight}); color: #fff; text-decoration: none; padding: 14px 36px; border-radius: 12px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 16px rgba(201,168,76,0.3); letter-spacing: 0.3px; }
+  .action-required { text-align: center; color: #d43b3b; font-weight: 700; font-size: 14px; margin-top: 20px; padding: 14px; background: #fef2f2; border-radius: 12px; border: 1px solid #fecaca; }
+  .footer { background: ${BRAND.footerBg}; padding: 32px 32px 28px; text-align: center; }
+  .footer-links { margin: 0 0 14px; font-size: 13px; }
+  .footer-links a { color: rgba(255,255,255,0.5); text-decoration: none; margin: 0 14px; transition: color 0.2s; font-weight: 500; }
   .footer-links a:hover { color: ${BRAND.goldLight}; }
-  .footer p { margin: 3px 0; font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.6; }
-  .greeting { font-size: 16px; color: ${BRAND.dark}; }
-  @media only screen and (max-width: 480px) { .wrapper { padding: 20px 8px; } .body { padding: 24px 20px; } .header { padding: 28px 20px 24px; } .card { padding: 16px; } .contact-block { padding: 16px 20px; } .cta { display: block; } }
+  .footer p { margin: 4px 0; font-size: 12px; color: rgba(255,255,255,0.35); line-height: 1.6; }
+  .footer-divider { width: 40px; height: 2px; background: ${BRAND.gold}; margin: 0 auto 16px; border-radius: 2px; }
+  @media only screen and (max-width: 480px) {
+    .wrapper { padding: 20px 8px; }
+    .body { padding: 24px 20px; }
+    .header { padding: 32px 20px 24px; }
+    .header h1 { font-size: 22px; }
+    .header-logo img { width: 52px; height: 52px; }
+    .card { padding: 16px; }
+    .contact-block { padding: 16px 20px; }
+    .footer { padding: 24px 20px 20px; }
+    .cta { display: block; }
+    .card-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .value { text-align: left; }
+  }
 `;
 
 function footerHTML() {
   const year = new Date().getFullYear();
   return `
     <div class="footer">
+      <div class="footer-divider"></div>
       <div class="footer-links">
-        <a href="https://get-credit.in/privacy-policy">Privacy Policy</a>
-        <a href="https://get-credit.in/terms">Terms &amp; Conditions</a>
+        <a href="https://get-credit.in">Home</a>
+        <a href="https://get-credit.in/services">Services</a>
+        <a href="https://get-credit.in/contact">Contact</a>
+        <a href="https://get-credit.in/privacy-policy">Privacy</a>
       </div>
       <p>This is an automated message from ${BRAND.name}. Please do not reply directly.</p>
       <p>&copy; ${year} ${BRAND.name}. All rights reserved.</p>
@@ -79,7 +98,9 @@ function baseWrapper(content) {
     <style>${baseStyles}</style></head>
     <body><div class="wrapper"><div class="container">
       <div class="header">
-        <div class="header-logo"><span>GC</span></div>
+        <div class="header-logo">
+          <img src="${BRAND.logoSrc}" alt="${BRAND.name}" width="64" height="64" />
+        </div>
         <h1>${BRAND.name}</h1>
         <p>${BRAND.tagline}</p>
       </div>
@@ -91,8 +112,8 @@ function baseWrapper(content) {
 function contactHTML() {
   return `
     <div class="contact-block">
-      <p>📞 <strong>+91 7738205198</strong> &nbsp;/&nbsp; <strong>+91 8408926551</strong> &nbsp;/&nbsp; <strong>+91 8793604734</strong></p>
-      <p>✉️ <strong>support@get-credit.in</strong></p>
+      <p><span class="contact-icon">📞</span> <strong>${BRAND.phone1}</strong> &nbsp;/&nbsp; <strong>${BRAND.phone2}</strong> &nbsp;/&nbsp; <strong>${BRAND.phone3}</strong></p>
+      <p style="margin-top:8px;"><span class="contact-icon">✉️</span> <strong>${BRAND.email}</strong></p>
     </div>`;
 }
 
@@ -108,7 +129,14 @@ const sendCustomerEmail = async (email, name, loanType, emi, tenure) => {
 
     const isCallback = loanType === 'Callback Request';
     const detailsHTML = emi && tenure
-      ? `<div class="card"><h3>Loan Summary</h3><div class="card-row"><span class="label">Loan Type</span><span class="value">${loanType}</span></div><div class="card-row"><span class="label">Monthly EMI</span><span class="emi-value">₹${Number(emi).toLocaleString()}</span></div><div class="card-row"><span class="label">Tenure</span><span class="value">${tenure} Years</span></div></div>`
+      ? `<div class="card">
+          <div class="card-header"><h3>Enquiry Summary</h3></div>
+          <div class="card-body">
+            <div class="card-row"><span class="label">Loan Type</span><span class="value">${loanType}</span></div>
+            <div class="card-row"><span class="label">Monthly EMI</span><span class="emi-value">₹${Number(emi).toLocaleString()}</span></div>
+            <div class="card-row"><span class="label">Tenure</span><span class="value">${tenure} Years</span></div>
+          </div>
+        </div>`
       : '';
 
     await resend.emails.send({
@@ -119,15 +147,15 @@ const sendCustomerEmail = async (email, name, loanType, emi, tenure) => {
         : 'Enquiry Submitted Successfully – Get Credit',
       html: baseWrapper(`
         <p class="greeting">Dear ${name},</p>
-        <p>Thank you for reaching out to <strong>${BRAND.name}</strong>.</p>
+        <p>Thank you for reaching out to <strong>${BRAND.name}</strong>. We appreciate your interest in our loan services.</p>
         <p>${isCallback
-          ? 'We have received your callback request. One of our loan experts will contact you within <strong>24 hours</strong>.'
-          : 'Your loan enquiry has been submitted successfully. Our team will review your details and get back to you shortly.'}</p>
+          ? 'We have received your callback request. One of our dedicated loan experts will contact you within <strong>24 hours</strong> to assist you with the best options tailored to your needs.'
+          : 'Your loan enquiry has been submitted successfully. Our experienced team will review your details and get back to you shortly with personalized loan solutions.'}</p>
         ${detailsHTML}
         <div class="divider"></div>
-        <p style="font-size:14px;color:#888;">If you have any questions in the meantime, feel free to contact us:</p>
+        <p style="font-size:14px;color:#888;">Have questions in the meantime? Reach out to us anytime:</p>
         ${contactHTML()}
-        <p style="margin-top:20px;">Warm regards,<br><strong style="color:${BRAND.goldDark};">The ${BRAND.name} Team</strong></p>
+        <p style="margin-top:24px;">Warm regards,<br><strong style="color:${BRAND.goldDark};font-size:16px;">The ${BRAND.name} Team</strong></p>
       `),
     });
   } catch (error) {
@@ -149,16 +177,18 @@ const sendAdminNotification = async (enquiry) => {
 
     const content = `
       <div class="card">
-        <h3>${isCallbackRequest ? 'New Callback Request' : 'New Enquiry Details'}</h3>
-        <div class="card-row"><span class="label">Name</span><span class="value">${enquiry.fullName || ''}</span></div>
-        <div class="card-row"><span class="label">Phone</span><span class="value">${enquiry.phone || enquiry.mobile || ''}</span></div>
-        <div class="card-row"><span class="label">Email</span><span class="value">${enquiry.email || ''}</span></div>
-        <div class="card-row"><span class="label">City</span><span class="value">${enquiry.city || ''}</span></div>
-        <div class="card-row"><span class="label">Loan Type</span><span class="value">${enquiry.loanType || ''}</span></div>
-        ${enquiry.loanAmount ? `<div class="card-row"><span class="label">Loan Amount</span><span class="value">₹${Number(enquiry.loanAmount).toLocaleString()}</span></div>` : ''}
-        ${enquiry.interestRate ? `<div class="card-row"><span class="label">Interest Rate</span><span class="value">${enquiry.interestRate}%</span></div>` : ''}
-        ${enquiry.tenure || enquiry.tenureYears ? `<div class="card-row"><span class="label">Tenure</span><span class="value">${enquiry.tenure || enquiry.tenureYears} Years</span></div>` : ''}
-        ${enquiry.emi || enquiry.calculatedEMI ? `<div class="card-row"><span class="label">EMI</span><span class="emi-value">₹${Number(enquiry.emi || enquiry.calculatedEMI).toLocaleString()}</span></div>` : ''}
+        <div class="card-header"><h3>${isCallbackRequest ? 'New Callback Request' : 'New Enquiry Details'}</h3></div>
+        <div class="card-body">
+          <div class="card-row"><span class="label">Name</span><span class="value">${enquiry.fullName || ''}</span></div>
+          <div class="card-row"><span class="label">Phone</span><span class="value">${enquiry.phone || enquiry.mobile || ''}</span></div>
+          <div class="card-row"><span class="label">Email</span><span class="value">${enquiry.email || ''}</span></div>
+          <div class="card-row"><span class="label">City</span><span class="value">${enquiry.city || ''}</span></div>
+          <div class="card-row"><span class="label">Loan Type</span><span class="value">${enquiry.loanType || ''}</span></div>
+          ${enquiry.loanAmount ? `<div class="card-row"><span class="label">Loan Amount</span><span class="value">₹${Number(enquiry.loanAmount).toLocaleString()}</span></div>` : ''}
+          ${enquiry.interestRate ? `<div class="card-row"><span class="label">Interest Rate</span><span class="value">${enquiry.interestRate}%</span></div>` : ''}
+          ${enquiry.tenure || enquiry.tenureYears ? `<div class="card-row"><span class="label">Tenure</span><span class="value">${enquiry.tenure || enquiry.tenureYears} Years</span></div>` : ''}
+          ${enquiry.emi || enquiry.calculatedEMI ? `<div class="card-row"><span class="label">EMI</span><span class="emi-value">₹${Number(enquiry.emi || enquiry.calculatedEMI).toLocaleString()}</span></div>` : ''}
+        </div>
       </div>`;
 
     await resend.emails.send({
