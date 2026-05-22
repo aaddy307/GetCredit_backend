@@ -5,7 +5,7 @@ const EducationLoanEnquiry = require('../models/EducationLoanEnquiry');
 const PersonalLoanEnquiry = require('../models/PersonalLoanEnquiry');
 const BusinessLoanEnquiry = require('../models/BusinessLoanEnquiry');
 const VehicleLoanEnquiry = require('../models/VehicleLoanEnquiry');
-const { sendAdminNotification } = require('../utils/sendEmail');
+const { sendCustomerEmail, sendAdminNotification } = require('../utils/sendEmail');
 
 const validateEnquiry = (data) => {
   const errors = [];
@@ -64,6 +64,7 @@ const createHomeLoanEnquiry = async (req, res) => {
       source: 'home_loan'
     });
 
+    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Home Loan', enquiry.calculatedEMI, enquiry.tenureYears).catch(() => {});
     sendAdminNotification({
       fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
       city: enquiry.city, loanType: 'Home Loan', loanAmount: enquiry.loanAmount,
@@ -100,6 +101,7 @@ const createLAPEnquiry = async (req, res) => {
       source: 'loan_against_property'
     });
 
+    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Loan Against Property', enquiry.calculatedEMI, enquiry.tenureYears).catch(() => {});
     sendAdminNotification({
       fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
       city: enquiry.city, loanType: 'Loan Against Property', loanAmount: enquiry.loanAmount,
@@ -139,6 +141,7 @@ const createEducationLoanEnquiry = async (req, res) => {
       source: 'education_loan'
     });
 
+    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Education Loan', enquiry.calculatedEMI, enquiry.tenureYears).catch(() => {});
     sendAdminNotification({
       fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
       city: enquiry.city, loanType: 'Education Loan', loanAmount: enquiry.loanAmount,
@@ -174,6 +177,7 @@ const createPersonalLoanEnquiry = async (req, res) => {
       source: 'personal_loan'
     });
 
+    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Personal Loan', enquiry.calculatedEMI, enquiry.tenureYears).catch(() => {});
     sendAdminNotification({
       fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
       city: enquiry.city, loanType: 'Personal Loan', loanAmount: enquiry.loanAmount,
@@ -211,6 +215,7 @@ const createBusinessLoanEnquiry = async (req, res) => {
       source: 'business_loan'
     });
 
+    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Business Loan', enquiry.calculatedEMI, enquiry.tenureYears).catch(() => {});
     sendAdminNotification({
       fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
       city: enquiry.city, loanType: 'Business Loan', loanAmount: enquiry.loanAmount,
@@ -246,6 +251,7 @@ const createVehicleLoanEnquiry = async (req, res) => {
       source: 'vehicle_loan'
     });
 
+    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Vehicle Loan', enquiry.calculatedEMI, enquiry.tenureYears).catch(() => {});
     sendAdminNotification({
       fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
       city: enquiry.city, loanType: 'Vehicle Loan', loanAmount: enquiry.loanAmount,

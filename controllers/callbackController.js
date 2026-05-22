@@ -1,5 +1,5 @@
 const CallbackRequest = require('../models/CallbackRequest');
-const { sendAdminNotification } = require('../utils/sendEmail');
+const { sendCustomerEmail, sendAdminNotification } = require('../utils/sendEmail');
 
 const VALID_STATUSES = ['Pending', 'Called', 'Closed'];
 
@@ -45,6 +45,7 @@ const createCallbackRequest = async (req, res) => {
       source: 'Website - Callback Request'
     });
 
+    sendCustomerEmail(callback.email, callback.fullName, 'Callback Request', 0, 0).catch(() => {});
     sendAdminNotification({
       fullName: callback.fullName,
       phone: callback.phone,
