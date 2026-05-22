@@ -1,7 +1,8 @@
 const { Resend } = require('resend');
 const Admin = require('../models/Admin');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const isTest = process.env.NODE_ENV === 'test';
+const resend = isTest ? null : new Resend(process.env.RESEND_API_KEY);
 
 const BRAND = {
   name: 'Get Credit',
@@ -98,23 +99,13 @@ function contactHTML() {
 const FROM_ADDRESS = 'Get Credit <support@get-credit.in>';
 
 const sendCustomerEmail = async (email, name, loanType, emi, tenure) => {
-  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 're_xxxxxxxxxxxx') return;
-
-  const isCallback = loanType === 'Callback Request';
-  const formattedEmi = emi ? `₹${Number(emi).toLocaleString()}` : '—';
-
-  let detailsHTML = '';
-  if (!isCallback) {
-    detailsHTML = `
-      <div class="card">
-        <h3>Loan Details</h3>
-        <div class="card-row"><span class="label">Loan Type</span><span class="value">${loanType}</span></div>
-        <div class="card-row"><span class="label">Estimated EMI</span><span class="emi-value">${formattedEmi}</span></div>
-        ${tenure ? `<div class="card-row"><span class="label">Tenure</span><span class="value">${tenure} Year${tenure > 1 ? 's' : ''}</span></div>` : ''}
-      </div>`;
-  }
-
+  if (isTest) return;
   try {
+    if (!resend) {
+      console.log('Resend not configured. Skipping customer email.');
+      return;
+    }
+
     await resend.emails.send({
       from: FROM_ADDRESS,
       to: email,
@@ -141,59 +132,13 @@ const sendCustomerEmail = async (email, name, loanType, emi, tenure) => {
 };
 
 const sendAdminNotification = async (enquiry) => {
-  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 're_xxxxxxxxxxxx') return;
-
-  const adminEmail = process.env.ADMIN_EMAIL;
-  const isCallbackRequest = enquiry.loanType === 'Callback Request';
-
+  if (isTest) return;
   try {
-    const admin = await Admin.findOne();
-    if (admin && isCallbackRequest && !admin.notifications?.emailOnCallbackRequest) return;
-  } catch (err) {}
+    if (!resend) {
+      console.log('Resend not configured. Skipping admin notification.');
+      return;
+    }
 
-  const timestamp = new Date(enquiry.createdAt).toLocaleString('en-IN', {
-    day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
-  });
-
-  let content;
-  if (isCallbackRequest) {
-    content = `
-      <div style="text-align:center;margin-bottom:4px;"><span class="badge">Callback Request</span></div>
-      <h2 style="text-align:center;">New Callback Request</h2>
-      <div class="card">
-        <div class="card-row"><span class="label">Name</span><span class="value">${enquiry.fullName}</span></div>
-        <div class="card-row"><span class="label">Phone</span><span class="value" style="font-size:16px;">${enquiry.phone}</span></div>
-        <div class="card-row"><span class="label">Email</span><span class="value">${enquiry.email}</span></div>
-        <div class="card-row"><span class="label">City</span><span class="value">${enquiry.city || 'N/A'}</span></div>
-        <div class="card-row"><span class="label">Requested On</span><span class="value">${timestamp}</span></div>
-      </div>
-      ${enquiry.message ? `<div class="card"><div class="card-row"><span class="label">Message</span></div><p style="margin:8px 0 0;color:#4a4a4a;">${enquiry.message}</p></div>` : ''}
-      <div class="cta-wrapper"><a href="https://get-credit.in/admin/dashboard" class="cta">View in Dashboard</a></div>
-      <div class="action-required">⚡ Action Required — Contact the customer promptly</div>`;
-  } else {
-    content = `
-      <div style="text-align:center;margin-bottom:4px;"><span class="badge">New Enquiry</span></div>
-      <h2 style="text-align:center;">Loan Enquiry Received</h2>
-      <div class="card">
-        <div class="card-row"><span class="label">Name</span><span class="value">${enquiry.fullName}</span></div>
-        <div class="card-row"><span class="label">Phone</span><span class="value" style="font-size:16px;">${enquiry.phone}</span></div>
-        <div class="card-row"><span class="label">Email</span><span class="value">${enquiry.email}</span></div>
-        <div class="card-row"><span class="label">City</span><span class="value">${enquiry.city || 'N/A'}</span></div>
-      </div>
-      <table>
-        <tr><th colspan="2">Enquiry Details</th></tr>
-        <tr><td>Loan Type</td><td>${enquiry.loanType}</td></tr>
-        <tr><td>Loan Amount</td><td>₹${Number(enquiry.loanAmount).toLocaleString()}</td></tr>
-        ${enquiry.interestRate ? `<tr><td>Interest Rate</td><td>${enquiry.interestRate}%</td></tr>` : ''}
-        ${enquiry.tenure ? `<tr><td>Tenure</td><td>${enquiry.tenure} Years</td></tr>` : ''}
-        ${enquiry.emi ? `<tr><td>Monthly EMI</td><td style="color:${BRAND.goldDark};font-weight:700;">₹${Number(enquiry.emi).toLocaleString()}</td></tr>` : ''}
-        <tr><td>Requested On</td><td>${timestamp}</td></tr>
-      </table>
-      <div class="cta-wrapper"><a href="https://get-credit.in/admin/dashboard" class="cta">View in Dashboard</a></div>
-      <div class="action-required">⚡ Action Required — Contact the customer within 24 hours</div>`;
-  }
-
-  try {
     await resend.emails.send({
       from: FROM_ADDRESS,
       to: adminEmail,

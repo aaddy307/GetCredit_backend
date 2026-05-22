@@ -22,7 +22,7 @@ const ALLOWED_UPDATE_FIELDS = [
 const VALID_STATUSES = ['Pending', 'In Review', 'Approved', 'Rejected', 'Closed', 'Running', 'Completed'];
 
 // Valid loan types
-const VALID_LOAN_TYPES = ['Home Loan', 'Loan Against Property', 'Education Loan', 'Personal Loan', 'Business Loan', 'Vehicle Loan', 'Callback Request', 'Contact Form'];
+const VALID_LOAN_TYPES = ['Home Loan', 'Loan Against Property', 'Education Loan', 'Personal Loan', 'Non-Salaried Loan', 'Business Loan', 'Vehicle Loan', 'Callback Request', 'Contact Form'];
 
 // Sanitize string - remove HTML and trim
 const sanitizeString = (str) => {

@@ -26,7 +26,7 @@ const optionalAuth = async (req, res, next) => {
 const publicEnquiryLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 5,
-  skip: (req) => !!req.admin,
+  skip: (req) => !!req.admin || process.env.NODE_ENV === 'test',
   message: { success: false, message: 'Too many enquiries submitted. Please try again later.' }
 });
 

@@ -88,12 +88,13 @@ const createLAPEnquiry = async (req, res) => {
 
     const { 
       fullName, mobile, email, city, loanAmount, 
-      propertyType, employmentType,
+      propertyType, propertyValue, employmentType,
       interestRate, tenureYears, calculatedEMI, totalInterest, totalPayable 
     } = req.body;
 
     const enquiry = await LAPEnquiry.create({
       fullName, mobile, email, city, loanAmount,
+      propertyValue: propertyValue || undefined,
       mortgagePropertyType: propertyType || 'Residential',
       employmentType: employmentType || 'Salaried',
       interestRate, tenureYears, calculatedEMI,

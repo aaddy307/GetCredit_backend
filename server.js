@@ -65,14 +65,16 @@ app.use(cookieParser());
 
 // Rate limiters
 const generalLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
+  windowMs: 60 * 1000,
   max: 100,
+  skip: () => process.env.NODE_ENV === 'test',
   message: { success: false, message: 'Too many requests. Please try again later.' }
 });
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 5,
+  skip: () => process.env.NODE_ENV === 'test',
   message: { success: false, message: 'Too many login attempts. Please try again later.' }
 });
 
@@ -138,4 +140,8 @@ const start = async () => {
   });
 };
 
-start();
+if (process.env.NODE_ENV !== 'test') {
+  start();
+}
+
+module.exports = { app, start };

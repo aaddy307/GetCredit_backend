@@ -41,7 +41,7 @@ const enquirySchema = new mongoose.Schema({
     type: String,
     required: [true, 'Loan type is required'],
     enum: {
-      values: ['Home Loan', 'Loan Against Property', 'Education Loan', 'Personal Loan', 'Business Loan', 'Vehicle Loan', 'Callback Request', 'Contact Form'],
+      values: ['Home Loan', 'Loan Against Property', 'Education Loan', 'Personal Loan', 'Non-Salaried Loan', 'Business Loan', 'Vehicle Loan', 'Callback Request', 'Contact Form'],
       message: 'Invalid loan type'
     }
   },

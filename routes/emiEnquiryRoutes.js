@@ -11,6 +11,7 @@ const { protect } = require('../middleware/authMiddleware');
 const publicEnquiryLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 5,
+  skip: () => process.env.NODE_ENV === 'test',
   message: { success: false, errors: ['Too many enquiries submitted. Please try again later.'] }
 });
 

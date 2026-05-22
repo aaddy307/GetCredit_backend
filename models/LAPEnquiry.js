@@ -33,6 +33,11 @@ const lapEnquirySchema = new mongoose.Schema({
     min: [10000, 'Loan amount must be at least ₹10,000'],
     max: [300000000, 'Loan amount cannot exceed ₹30 Crore']
   },
+  propertyValue: {
+    type: Number,
+    min: [100000, 'Property value must be at least ₹1,00,000'],
+    max: [500000000, 'Property value cannot exceed ₹50 Crore']
+  },
   mortgagePropertyType: {
     type: String,
     enum: ['Residential', 'Commercial', 'Industrial', 'Plot'],

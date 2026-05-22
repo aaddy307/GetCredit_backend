@@ -4,7 +4,7 @@ const { protect } = require('../middleware/authMiddleware');
 const { requirePermission } = require('../middleware/permissionMiddleware');
 const Admin = require('../models/Admin');
 
-router.get('/users', protect, requirePermission('users', 'read'), async (req, res) => {
+router.get('/', protect, requirePermission('users', 'read'), async (req, res) => {
   try {
     const admins = await Admin.find().select('-password -sessionTokens -allTokensInvalidated -loginAttempts -lockUntil');
     res.json({ success: true, admins });
@@ -13,7 +13,7 @@ router.get('/users', protect, requirePermission('users', 'read'), async (req, re
   }
 });
 
-router.post('/users', protect, requirePermission('users', 'create'), async (req, res) => {
+router.post('/', protect, requirePermission('users', 'create'), async (req, res) => {
   try {
     const { email, password, name, role } = req.body;
 
@@ -40,7 +40,7 @@ router.post('/users', protect, requirePermission('users', 'create'), async (req,
   }
 });
 
-router.put('/users/:id', protect, requirePermission('users', 'update'), async (req, res) => {
+router.put('/:id', protect, requirePermission('users', 'update'), async (req, res) => {
   try {
     const { name, role } = req.body;
     const admin = await Admin.findById(req.params.id);
@@ -62,7 +62,7 @@ router.put('/users/:id', protect, requirePermission('users', 'update'), async (r
   }
 });
 
-router.delete('/users/:id', protect, requirePermission('users', 'delete'), async (req, res) => {
+router.delete('/:id', protect, requirePermission('users', 'delete'), async (req, res) => {
   try {
     if (req.params.id === req.admin._id.toString()) {
       return res.status(400).json({ success: false, message: 'Cannot delete yourself' });
