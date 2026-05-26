@@ -50,7 +50,7 @@ export const getBlog = async (req, res) => {
 
 export const createBlog = async (req, res) => {
   try {
-    const { title, category, date, excerpt, content } = req.body;
+    const { title, category, date, excerpt, content, status, author } = req.body;
 
     if (!title || !category || !excerpt || !content) {
       return res.status(400).json({
@@ -59,7 +59,7 @@ export const createBlog = async (req, res) => {
       });
     }
 
-    const blog = await Blog.create({ title, category, date: date || Date.now(), excerpt, content });
+    const blog = await Blog.create({ title, category, date: date || Date.now(), excerpt, content, status, author });
 
     res.status(201).json({ success: true, message: 'Blog created successfully', blog });
   } catch (error) {
@@ -69,18 +69,20 @@ export const createBlog = async (req, res) => {
 
 export const updateBlog = async (req, res) => {
   try {
-    const { title, category, date, excerpt, content } = req.body;
+    const { title, category, date, excerpt, content, status, author } = req.body;
 
     const blog = await Blog.findById(req.params.id);
     if (!blog) {
       return res.status(404).json({ success: false, message: 'Blog not found' });
     }
 
-    if (title) blog.title = title;
-    if (category) blog.category = category;
-    if (date) blog.date = date;
-    if (excerpt) blog.excerpt = excerpt;
-    if (content) blog.content = content;
+    if (title !== undefined) blog.title = title;
+    if (category !== undefined) blog.category = category;
+    if (date !== undefined) blog.date = date;
+    if (excerpt !== undefined) blog.excerpt = excerpt;
+    if (content !== undefined) blog.content = content;
+    if (status !== undefined) blog.status = status;
+    if (author !== undefined) blog.author = author;
 
     await blog.save();
 

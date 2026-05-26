@@ -33,6 +33,16 @@ const blogSchema = new mongoose.Schema({
     type: String,
     required: true,
     maxlength: 50000
+  },
+  status: {
+    type: String,
+    enum: ['Draft', 'Published'],
+    default: 'Draft'
+  },
+  author: {
+    type: String,
+    trim: true,
+    default: ''
   }
 }, {
   timestamps: true
