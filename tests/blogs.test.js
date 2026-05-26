@@ -39,7 +39,7 @@ describe('Blog Endpoints', () => {
 
       await request(app)
         .post('/api/blogs')
-        .set('Cookie', `token=${token}`)
+        .set('Authorization', `Bearer ${token}`)
         .send(validBlog);
 
       const res = await request(app).get('/api/blogs');
@@ -55,7 +55,7 @@ describe('Blog Endpoints', () => {
 
       const res = await request(app)
         .post('/api/blogs')
-        .set('Cookie', `token=${token}`)
+        .set('Authorization', `Bearer ${token}`)
         .send(validBlog);
       expect(res.status).toBe(201);
       expect(res.body.blog).toHaveProperty('slug');
@@ -74,7 +74,7 @@ describe('Blog Endpoints', () => {
 
       const res = await request(app)
         .post('/api/blogs')
-        .set('Cookie', `token=${token}`)
+        .set('Authorization', `Bearer ${token}`)
         .send({ ...validBlog, title: '' });
       expect(res.status).toBe(400);
     });

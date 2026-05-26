@@ -29,7 +29,7 @@ describe('Admin Protected Endpoints', () => {
     it('should return today stats with auth', async () => {
       const res = await request(app)
         .get('/api/admin/stats/today')
-        .set('Cookie', `token=${token}`);
+        .set('Authorization', `Bearer ${token}`);
       expect(res.status).toBe(200);
       expect(res.body.stats).toHaveProperty('todayLeads');
       expect(res.body.stats).toHaveProperty('totalLeads');
@@ -45,7 +45,7 @@ describe('Admin Protected Endpoints', () => {
     it('should return analytics summary with auth', async () => {
       const res = await request(app)
         .get('/api/admin/analytics/summary')
-        .set('Cookie', `token=${token}`);
+        .set('Authorization', `Bearer ${token}`);
       expect(res.status).toBe(200);
     });
   });
@@ -54,7 +54,7 @@ describe('Admin Protected Endpoints', () => {
     it('should return all leads with auth', async () => {
       const res = await request(app)
         .get('/api/admin/all-leads')
-        .set('Cookie', `token=${token}`);
+        .set('Authorization', `Bearer ${token}`);
       expect(res.status).toBe(200);
     });
   });
@@ -63,7 +63,7 @@ describe('Admin Protected Endpoints', () => {
     it('should search with auth and query', async () => {
       const res = await request(app)
         .get('/api/admin/search?q=test')
-        .set('Cookie', `token=${token}`);
+        .set('Authorization', `Bearer ${token}`);
       expect(res.status).toBe(200);
     });
   });
@@ -72,7 +72,7 @@ describe('Admin Protected Endpoints', () => {
     it('GET /api/admin/users should list users with auth', async () => {
       const res = await request(app)
         .get('/api/admin/users')
-        .set('Cookie', `token=${token}`);
+        .set('Authorization', `Bearer ${token}`);
       expect(res.status).toBe(200);
       expect(res.body.admins.length).toBe(1);
     });
@@ -80,7 +80,7 @@ describe('Admin Protected Endpoints', () => {
     it('POST /api/admin/users should create user with auth', async () => {
       const res = await request(app)
         .post('/api/admin/users')
-        .set('Cookie', `token=${token}`)
+        .set('Authorization', `Bearer ${token}`)
         .send({
           name: 'New User',
           email: 'newuser@test.com',
@@ -95,7 +95,7 @@ describe('Admin Protected Endpoints', () => {
     it('should export with auth', async () => {
       const res = await request(app)
         .get('/api/admin/leads/export?format=csv')
-        .set('Cookie', `token=${token}`);
+        .set('Authorization', `Bearer ${token}`);
       expect(res.status).toBe(200);
     });
   });

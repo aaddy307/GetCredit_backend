@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const connectDB = require('./config/db');
 
@@ -62,7 +61,6 @@ app.use(cors({
 // Body size limits
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(cookieParser());
 
 // Failed-login IP rate limiter: escalating lockout
 //   6 failed attempts → 5 min lock, then 10, 15, 20, 25, 30 (cap)

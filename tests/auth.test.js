@@ -33,8 +33,7 @@ describe('Admin Auth', () => {
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.admin.email).toBe(adminData.email);
-      // Token is set as httpOnly cookie
-      expect(res.headers['set-cookie']).toBeDefined();
+      expect(res.body.token).toBeDefined();
     });
 
     it('should reject invalid password', async () => {
@@ -93,7 +92,7 @@ describe('Admin Auth', () => {
       const token = generateToken(admin._id);
       const res = await request(app)
         .get('/api/admin/profile')
-        .set('Cookie', `token=${token}`);
+        .set('Authorization', `Bearer ${token}`);
       expect(res.status).toBe(200);
       expect(res.body.admin.email).toBe(adminData.email);
     });
@@ -105,12 +104,12 @@ describe('Admin Auth', () => {
   });
 
   describe('POST /api/admin/logout', () => {
-    it('should clear token cookie', async () => {
+    it('should logout successfully', async () => {
       const admin = await createTestAdmin(adminData);
       const token = generateToken(admin._id);
       const res = await request(app)
         .post('/api/admin/logout')
-        .set('Cookie', `token=${token}`);
+        .set('Authorization', `Bearer ${token}`);
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
     });

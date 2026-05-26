@@ -61,7 +61,7 @@ describe('Callback Endpoints', () => {
 
       const res = await request(app)
         .get('/api/callback')
-        .set('Cookie', `token=${token}`);
+        .set('Authorization', `Bearer ${token}`);
       expect(res.status).toBe(200);
       expect(res.body.data.length).toBe(1);
     });
@@ -84,7 +84,7 @@ describe('Callback Endpoints', () => {
 
       const res = await request(app)
         .patch(`/api/callback/${callbackId}/status`)
-        .set('Cookie', `token=${token}`)
+        .set('Authorization', `Bearer ${token}`)
         .send({ status: 'Called' });
       expect(res.status).toBe(200);
       expect(res.body.data.status).toBe('Called');
@@ -101,7 +101,7 @@ describe('Callback Endpoints', () => {
 
       const res = await request(app)
         .patch(`/api/callback/${callbackId}/status`)
-        .set('Cookie', `token=${token}`)
+        .set('Authorization', `Bearer ${token}`)
         .send({ status: 'Invalid' });
       expect(res.status).toBe(400);
     });

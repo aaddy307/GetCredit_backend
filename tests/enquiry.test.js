@@ -69,7 +69,7 @@ describe('Enquiry Endpoints', () => {
 
       const res = await request(app)
         .get('/api/enquiry')
-        .set('Cookie', `token=${token}`);
+        .set('Authorization', `Bearer ${token}`);
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.enquiries.length).toBe(1);
@@ -87,7 +87,7 @@ describe('Enquiry Endpoints', () => {
       const token = generateToken(admin._id);
       const res = await request(app)
         .get('/api/enquiry/stats')
-        .set('Cookie', `token=${token}`);
+        .set('Authorization', `Bearer ${token}`);
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
     });

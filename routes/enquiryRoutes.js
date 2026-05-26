@@ -14,8 +14,8 @@ const { protect } = require('../middleware/authMiddleware');
 
 const optionalAuth = async (req, res, next) => {
   try {
-    if (req.cookies.token) {
-      const decoded = jwt.verify(req.cookies.token, process.env.JWT_SECRET);
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      const decoded = jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_SECRET);
       req.admin = await Admin.findById(decoded.id);
     }
   } catch {}

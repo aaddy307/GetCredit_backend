@@ -76,7 +76,7 @@ describe('EMI Enquiry Endpoints', () => {
 
       const res = await request(app)
         .get('/api/emi/admin/emi-enquiries')
-        .set('Cookie', `token=${token}`);
+        .set('Authorization', `Bearer ${token}`);
       expect(res.status).toBe(200);
       expect(res.body.data.length).toBeGreaterThanOrEqual(1);
     });

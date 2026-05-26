@@ -48,16 +48,10 @@ const login = async (req, res) => {
 
     const token = generateToken(admin._id);
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000
-    });
-
     res.json({
       success: true,
       message: 'Login successful',
+      token,
       admin: {
         id: admin._id,
         name: admin.name,
@@ -72,13 +66,6 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
-    res.cookie('token', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      expires: new Date(0)
-    });
-
     res.json({
       success: true,
       message: 'Logged out successfully'
@@ -127,16 +114,10 @@ const createAdmin = async (req, res) => {
 
     const token = generateToken(admin._id);
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000
-    });
-
     res.status(201).json({
       success: true,
       message: 'Admin created successfully',
+      token,
       admin: {
         id: admin._id,
         name: admin.name,
