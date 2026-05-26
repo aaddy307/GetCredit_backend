@@ -46,21 +46,24 @@ app.use(helmet({
 // CORS configuration
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-  : [];
+  : (process.env.NODE_ENV === 'production' ? [] : ['http://localhost:3000']);
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.length === 0 || allowedOrigins.some(o => origin.startsWith(o.replace(/\/$/, '')))) {
-      callback(null, true);
-    } else {
-      callback(null, false);
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.length === 0) {
+      return callback(null, false);
     }
+    if (allowedOrigins.some(o => origin.startsWith(o.replace(/\/$/, '')))) {
+      return callback(null, true);
+    }
+    callback(null, false);
   },
   credentials: true
 }));
 
 // Body size limits
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
 // Rate limiters
@@ -124,6 +127,14 @@ app.use((err, req, res, next) => {
     message: 'Something went wrong!'
   });
 });
+
+// Graceful shutdown
+const closeServers = () => {
+  process.exit(0);
+};
+
+process.on('SIGTERM', closeServers);
+process.on('SIGINT', closeServers);
 
 // Handle unhandled promise rejections to prevent server crashes
 process.on('unhandledRejection', (err) => {

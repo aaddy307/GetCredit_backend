@@ -69,7 +69,12 @@ const enquirySchema = new mongoose.Schema({
   tenure: {
     type: Number,
     min: 1,
-    max: 30
+    max: 84
+  },
+  tenureUnit: {
+    type: String,
+    enum: ['Years', 'Months'],
+    default: 'Years'
   },
   emi: {
     type: Number

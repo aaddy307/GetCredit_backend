@@ -26,6 +26,7 @@ const normalizeLead = (doc, collection, loanType, source) => ({
   status: doc.status || 'Pending',
   leadSource: source || doc.leadSource || 'Website',
   tenure: doc.tenure || doc.tenureYears || null,
+  tenureUnit: doc.tenureUnit || null,
   interestRate: doc.interestRate || null,
   createdAt: doc.createdAt,
   _collection: collection,
@@ -34,10 +35,7 @@ const normalizeLead = (doc, collection, loanType, source) => ({
 
 exports.getAllLeads = async (req, res) => {
   try {
-    const { search, status, loanType, source, startDate, endDate, page = 1, limit = 20 } = req.query;
-    const pageNum = Math.max(1, parseInt(page));
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
-    const skip = (pageNum - 1) * limitNum;
+    const { search, status, loanType, source, startDate, endDate } = req.query;
 
     const searchRegex = search ? new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') : null;
 
@@ -63,8 +61,8 @@ exports.getAllLeads = async (req, res) => {
     const emiQuery = buildQuery(['mobile']);
 
     const [enquiries, ...emiResults] = await Promise.all([
-      Enquiry.find(enqQuery).sort({ createdAt: -1 }).skip(skip).limit(limitNum).lean(),
-      ...emiModels.map(({ model }) => model.find(emiQuery).sort({ createdAt: -1 }).skip(skip).limit(limitNum).lean()),
+      Enquiry.find(enqQuery).sort({ createdAt: -1 }).lean(),
+      ...emiModels.map(({ model }) => model.find(emiQuery).sort({ createdAt: -1 }).lean()),
     ]);
 
     let allLeads = [
@@ -75,15 +73,10 @@ exports.getAllLeads = async (req, res) => {
     ];
 
     allLeads.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    const total = allLeads.length;
-    allLeads = allLeads.slice(0, limitNum);
 
     res.json({
       success: true,
       count: allLeads.length,
-      total,
-      page: pageNum,
-      pages: Math.ceil(total / limitNum),
       leads: allLeads,
     });
   } catch (error) {
@@ -116,7 +109,7 @@ exports.updateLead = async (req, res) => {
       delete updateData.phone;
     }
 
-    const ALLOWED_FIELDS = ['fullName', 'phone', 'mobile', 'email', 'city', 'loanType', 'loanAmount', 'status', 'notes', 'leadSource'];
+    const ALLOWED_FIELDS = ['fullName', 'phone', 'mobile', 'email', 'city', 'loanType', 'loanAmount', 'status', 'notes', 'leadSource', 'tenure', 'tenureUnit'];
     const sanitized = {};
     for (const key of ALLOWED_FIELDS) {
       if (updateData[key] !== undefined) {
@@ -180,10 +173,14 @@ exports.exportAllLeads = async (req, res) => {
       ...emiModels.map(({ model }) => model.find(query).sort({ createdAt: -1 }).lean()),
     ]);
 
+    const MONTH_TENURE_LOANS = ['Personal Loan', 'Non-Salaried Loan', 'Business Loan'];
+    const getUnit = (loanType, doc) => doc.tenureUnit || (MONTH_TENURE_LOANS.includes(loanType) ? 'Months' : 'Years');
+
     const rows = [
       ...enquiries.map(e => ({
         Name: e.fullName, Phone: e.phone, Email: e.email, City: e.city || '',
         'Loan Type': e.loanType, Amount: e.loanAmount, Status: e.status,
+        Tenure: e.tenure ? `${e.tenure} ${getUnit(e.loanType, e)}` : '-',
         Source: e.leadSource || 'Website',
         'Created At': e.createdAt ? new Date(e.createdAt).toLocaleString() : '',
       })),
@@ -191,6 +188,7 @@ exports.exportAllLeads = async (req, res) => {
         docs.map(d => ({
           Name: d.fullName, Phone: d.mobile || d.phone || '', Email: d.email, City: d.city || '',
           'Loan Type': emiModels[i].type, Amount: d.loanAmount, Status: d.status || 'Pending',
+          Tenure: d.tenureYears ? `${d.tenureYears} ${getUnit(emiModels[i].type, d)}` : '-',
           Source: emiModels[i].source,
           'Created At': d.createdAt ? new Date(d.createdAt).toLocaleString() : '',
         }))

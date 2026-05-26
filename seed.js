@@ -12,6 +12,9 @@ const connectDB = async () => {
   }
 };
 
+console.warn('WARNING: This seed script uses a hardcoded default password.');
+console.warn('Change the password immediately after first login.\n');
+
 const seedAdmin = async () => {
   await connectDB();
 
@@ -28,6 +31,7 @@ const seedAdmin = async () => {
     console.log('Admin created successfully');
     console.log('Email: admin@getcredit.com');
     console.log('Password: Admin@123456');
+    console.warn('\nIMPORTANT: Change the default password after first login.');
   }
 
   process.exit();

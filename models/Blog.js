@@ -1,9 +1,5 @@
 const mongoose = require('mongoose');
 
-const stripHtml = (html) => {
-  return html.replace(/<[^>]*>/g, '').trim();
-};
-
 const blogSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -48,9 +44,6 @@ blogSchema.pre('save', function(next) {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
-  }
-  if (this.isModified('content')) {
-    this.content = stripHtml(this.content);
   }
   next();
 });

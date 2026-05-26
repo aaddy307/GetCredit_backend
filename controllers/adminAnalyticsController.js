@@ -76,6 +76,14 @@ exports.getLoanDistribution = async (req, res) => {
   }
 };
 
+const countStatusAll = async (statusFilter) => {
+  const counts = await Promise.all([
+    Enquiry.countDocuments({ status: statusFilter }),
+    ...emiModels.map(m => m.countDocuments({ status: statusFilter })),
+  ]);
+  return counts.reduce((a, b) => a + b, 0);
+};
+
 exports.getSummary = async (req, res) => {
   try {
     const totalLeads = await countAll();
@@ -85,10 +93,10 @@ exports.getSummary = async (req, res) => {
     const recentFilter = { createdAt: { $gte: sevenDaysAgo } };
 
     const newLeads = await countAll(recentFilter);
-    const pending = await Enquiry.countDocuments({ status: 'Pending' });
-    const running = await Enquiry.countDocuments({ status: 'In Review' });
-    const completed = await Enquiry.countDocuments({ status: { $in: ['Approved', 'Closed'] } });
-    const rejected = await Enquiry.countDocuments({ status: 'Rejected' });
+    const pending = await countStatusAll('Pending');
+    const running = await countStatusAll('In Review');
+    const completed = await countStatusAll({ $in: ['Approved', 'Closed'] });
+    const rejected = await countStatusAll('Rejected');
 
     res.json({
       success: true,
@@ -102,12 +110,19 @@ exports.getSummary = async (req, res) => {
 exports.getRecentLeads = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 5;
-    const leads = await Enquiry.find()
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .select('fullName phone email loanType loanAmount status createdAt');
+    const [enquiries, ...emiDocs] = await Promise.all([
+      Enquiry.find().sort({ createdAt: -1 }).limit(limit).select('fullName phone email city loanType loanAmount status createdAt leadSource').lean(),
+      ...emiModels.map(m => m.find().sort({ createdAt: -1 }).limit(limit).select('fullName mobile email city loanType tenureYears loanAmount status createdAt').lean()),
+    ]);
 
-    res.json({ success: true, data: leads });
+    const allLeads = [
+      ...enquiries.map(e => ({ ...e, _isEMI: false, phone: e.phone })),
+      ...emiDocs.flat().map(d => ({ ...d, _isEMI: true, phone: d.mobile })),
+    ];
+
+    allLeads.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    res.json({ success: true, data: allLeads.slice(0, limit) });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

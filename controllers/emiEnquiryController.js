@@ -51,7 +51,8 @@ const createHomeLoanEnquiry = async (req, res) => {
     const { 
       fullName, mobile, email, city, loanAmount, 
       propertyType, propertyLocation, employmentType,
-      interestRate, tenureYears, calculatedEMI, totalInterest, totalPayable 
+      interestRate, tenureYears, calculatedEMI, totalInterest, totalPayable,
+      tenureUnit
     } = req.body;
 
     const enquiry = await HomeLoanEnquiry.create({
@@ -60,15 +61,18 @@ const createHomeLoanEnquiry = async (req, res) => {
       propertyLocation: propertyLocation || '',
       employmentType: employmentType || 'Salaried',
       interestRate, tenureYears, calculatedEMI,
+      tenureUnit: tenureUnit || 'Years',
       totalInterest: totalInterest || 0, totalPayable: totalPayable || 0,
       source: 'home_loan'
     });
 
-    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Home Loan', enquiry.calculatedEMI, enquiry.tenureYears).catch(() => {});
+    const unit = tenureUnit || 'Years';
+    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Home Loan', enquiry.calculatedEMI, enquiry.tenureYears, unit).catch(() => {});
     sendAdminNotification({
       fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
       city: enquiry.city, loanType: 'Home Loan', loanAmount: enquiry.loanAmount,
       interestRate: enquiry.interestRate, tenure: enquiry.tenureYears,
+      tenureUnit: unit,
       emi: enquiry.calculatedEMI, createdAt: enquiry.createdAt
     }).catch(() => {});
 
@@ -89,7 +93,8 @@ const createLAPEnquiry = async (req, res) => {
     const { 
       fullName, mobile, email, city, loanAmount, 
       propertyType, propertyValue, employmentType,
-      interestRate, tenureYears, calculatedEMI, totalInterest, totalPayable 
+      interestRate, tenureYears, calculatedEMI, totalInterest, totalPayable,
+      tenureUnit
     } = req.body;
 
     const enquiry = await LAPEnquiry.create({
@@ -98,15 +103,18 @@ const createLAPEnquiry = async (req, res) => {
       mortgagePropertyType: propertyType || 'Residential',
       employmentType: employmentType || 'Salaried',
       interestRate, tenureYears, calculatedEMI,
+      tenureUnit: tenureUnit || 'Years',
       totalInterest: totalInterest || 0, totalPayable: totalPayable || 0,
       source: 'loan_against_property'
     });
 
-    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Loan Against Property', enquiry.calculatedEMI, enquiry.tenureYears).catch(() => {});
+    const unit = tenureUnit || 'Years';
+    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Loan Against Property', enquiry.calculatedEMI, enquiry.tenureYears, unit).catch(() => {});
     sendAdminNotification({
       fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
       city: enquiry.city, loanType: 'Loan Against Property', loanAmount: enquiry.loanAmount,
       interestRate: enquiry.interestRate, tenure: enquiry.tenureYears,
+      tenureUnit: unit,
       emi: enquiry.calculatedEMI, createdAt: enquiry.createdAt
     }).catch(() => {});
 
@@ -127,7 +135,8 @@ const createEducationLoanEnquiry = async (req, res) => {
     const { 
       fullName, mobile, email, city, loanAmount, 
       qualification, degreeType, institutionName,
-      interestRate, tenureYears, calculatedEMI, totalInterest, totalPayable 
+      interestRate, tenureYears, calculatedEMI, totalInterest, totalPayable,
+      tenureUnit
     } = req.body;
 
     if (!qualification) {
@@ -138,15 +147,18 @@ const createEducationLoanEnquiry = async (req, res) => {
       fullName, mobile, email, city, loanAmount,
       qualification, degreeType, institutionName,
       interestRate, tenureYears, calculatedEMI,
+      tenureUnit: tenureUnit || 'Years',
       totalInterest: totalInterest || 0, totalPayable: totalPayable || 0,
       source: 'education_loan'
     });
 
-    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Education Loan', enquiry.calculatedEMI, enquiry.tenureYears).catch(() => {});
+    const unit = tenureUnit || 'Years';
+    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Education Loan', enquiry.calculatedEMI, enquiry.tenureYears, unit).catch(() => {});
     sendAdminNotification({
       fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
       city: enquiry.city, loanType: 'Education Loan', loanAmount: enquiry.loanAmount,
       interestRate: enquiry.interestRate, tenure: enquiry.tenureYears,
+      tenureUnit: unit,
       emi: enquiry.calculatedEMI, createdAt: enquiry.createdAt
     }).catch(() => {});
 
@@ -167,22 +179,26 @@ const createPersonalLoanEnquiry = async (req, res) => {
     const { 
       fullName, mobile, email, city, loanAmount,
       employmentType,
-      interestRate, tenureYears, calculatedEMI, totalInterest, totalPayable 
+      interestRate, tenureYears, calculatedEMI, totalInterest, totalPayable,
+      tenureUnit
     } = req.body;
 
     const enquiry = await PersonalLoanEnquiry.create({
       fullName, mobile, email, city, loanAmount,
       employmentType: employmentType || 'Salaried',
       interestRate, tenureYears, calculatedEMI,
+      tenureUnit: tenureUnit || 'Months',
       totalInterest: totalInterest || 0, totalPayable: totalPayable || 0,
       source: 'personal_loan'
     });
 
-    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Personal Loan', enquiry.calculatedEMI, enquiry.tenureYears).catch(() => {});
+    const unit = tenureUnit || 'Months';
+    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Personal Loan', enquiry.calculatedEMI, enquiry.tenureYears, unit).catch(() => {});
     sendAdminNotification({
       fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
       city: enquiry.city, loanType: 'Personal Loan', loanAmount: enquiry.loanAmount,
       interestRate: enquiry.interestRate, tenure: enquiry.tenureYears,
+      tenureUnit: unit,
       emi: enquiry.calculatedEMI, createdAt: enquiry.createdAt
     }).catch(() => {});
 
@@ -204,23 +220,27 @@ const createBusinessLoanEnquiry = async (req, res) => {
       fullName, mobile, email, city, loanAmount,
       employmentType,
       interestRate, tenureYears, calculatedEMI, totalInterest, totalPayable,
-      businessVintage
+      businessVintage,
+      tenureUnit
     } = req.body;
 
     const enquiry = await BusinessLoanEnquiry.create({
       fullName, mobile, email, city, loanAmount,
       employmentType: employmentType || 'Salaried',
       interestRate, tenureYears, calculatedEMI,
+      tenureUnit: tenureUnit || 'Months',
       totalInterest: totalInterest || 0, totalPayable: totalPayable || 0,
       businessVintage: businessVintage || 0,
       source: 'business_loan'
     });
 
-    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Business Loan', enquiry.calculatedEMI, enquiry.tenureYears).catch(() => {});
+    const unit = tenureUnit || 'Months';
+    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Business Loan', enquiry.calculatedEMI, enquiry.tenureYears, unit).catch(() => {});
     sendAdminNotification({
       fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
       city: enquiry.city, loanType: 'Business Loan', loanAmount: enquiry.loanAmount,
       interestRate: enquiry.interestRate, tenure: enquiry.tenureYears,
+      tenureUnit: unit,
       emi: enquiry.calculatedEMI, createdAt: enquiry.createdAt
     }).catch(() => {});
 
@@ -241,22 +261,26 @@ const createVehicleLoanEnquiry = async (req, res) => {
     const { 
       fullName, mobile, email, city, loanAmount, downPayment = 0,
       interestRate, tenureYears, calculatedEMI, totalInterest, totalPayable,
-      vehicleType
+      vehicleType,
+      tenureUnit
     } = req.body;
 
     const enquiry = await VehicleLoanEnquiry.create({
       fullName, mobile, email, city, loanAmount, downPayment,
       interestRate, tenureYears, calculatedEMI,
+      tenureUnit: tenureUnit || 'Years',
       totalInterest: totalInterest || 0, totalPayable: totalPayable || 0,
       vehicleType: vehicleType || 'New Car',
       source: 'vehicle_loan'
     });
 
-    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Vehicle Loan', enquiry.calculatedEMI, enquiry.tenureYears).catch(() => {});
+    const unit = tenureUnit || 'Years';
+    sendCustomerEmail(enquiry.email, enquiry.fullName, 'Vehicle Loan', enquiry.calculatedEMI, enquiry.tenureYears, unit).catch(() => {});
     sendAdminNotification({
       fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
       city: enquiry.city, loanType: 'Vehicle Loan', loanAmount: enquiry.loanAmount,
       interestRate: enquiry.interestRate, tenure: enquiry.tenureYears,
+      tenureUnit: unit,
       emi: enquiry.calculatedEMI, createdAt: enquiry.createdAt
     }).catch(() => {});
 

@@ -4,7 +4,7 @@ const { sendCustomerEmail, sendAdminNotification } = require('../utils/sendEmail
 // Allowed fields for enquiry creation
 const ALLOWED_CREATE_FIELDS = [
   'fullName', 'phone', 'email', 'city', 'message', 'loanType',
-  'loanAmount', 'downPayment', 'interestRate', 'tenure', 'emi',
+  'loanAmount', 'downPayment', 'interestRate', 'tenure', 'tenureUnit', 'emi',
   'qualification', 'degree', 'abroad', 'propertyType',
   'propertyLocation', 'employmentType', 'institutionName', 'propertyValue',
   'websiteUrl' // honeypot field
@@ -52,6 +52,7 @@ exports.createEnquiry = async (req, res) => {
       downPayment,
       interestRate,
       tenure,
+      tenureUnit,
       emi,
       qualification,
       degree,
@@ -113,6 +114,7 @@ exports.createEnquiry = async (req, res) => {
       enquiryData.downPayment = downPayment ? Number(downPayment) : 0;
       enquiryData.interestRate = interestRate ? Number(interestRate) : undefined;
       enquiryData.tenure = tenure ? Number(tenure) : undefined;
+      enquiryData.tenureUnit = tenureUnit === 'Years' || tenureUnit === 'Months' ? tenureUnit : undefined;
       enquiryData.emi = calculatedEmi;
       enquiryData.qualification = qualification ? sanitizeString(qualification) : '';
       enquiryData.degree = degree ? sanitizeString(degree) : '';
@@ -129,7 +131,7 @@ exports.createEnquiry = async (req, res) => {
     const enquiry = await Enquiry.create(enquiryData);
 
     if (!isCallbackRequest) {
-      sendCustomerEmail(email, fullName, loanType, calculatedEmi, tenure).catch(() => {});
+      sendCustomerEmail(email, fullName, loanType, calculatedEmi, tenure, tenureUnit).catch(() => {});
     }
     sendAdminNotification(enquiry).catch(() => {});
 
