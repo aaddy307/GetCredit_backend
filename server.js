@@ -25,6 +25,8 @@ const exportRoutes = require('./routes/exportRoutes');
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 const migrateRoles = async () => {
   const Admin = require('./models/Admin');
   const result = await Admin.updateMany(
