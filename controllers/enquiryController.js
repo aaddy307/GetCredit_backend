@@ -131,7 +131,7 @@ exports.createEnquiry = async (req, res) => {
     const enquiry = await Enquiry.create(enquiryData);
 
     if (!isCallbackRequest) {
-      sendCustomerEmail(email, fullName, loanType, calculatedEmi, tenure, tenureUnit).catch(() => {});
+      sendCustomerEmail(email, fullName, loanType, calculatedEmi, tenure, tenureUnit, phone, city).catch(() => {});
     }
     sendAdminNotification(enquiry).catch(() => {});
 

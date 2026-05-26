@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 const { 
@@ -23,14 +22,7 @@ const optionalAuth = async (req, res, next) => {
   next();
 };
 
-const publicEnquiryLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 5,
-  skip: (req) => !!req.admin || process.env.NODE_ENV === 'test',
-  message: { success: false, message: 'Too many enquiries submitted. Please try again later.' }
-});
-
-router.post('/', optionalAuth, publicEnquiryLimiter, createEnquiry);
+router.post('/', optionalAuth, createEnquiry);
 router.get('/', protect, getAllEnquiries);
 router.get('/stats', protect, getDashboardStats);
 router.get('/:id', protect, getEnquiry);

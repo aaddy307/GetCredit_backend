@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const connectDB = require('./config/db');
 
@@ -63,28 +62,74 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// Rate limiters
-const generalLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 100,
-  skip: () => process.env.NODE_ENV === 'test',
-  message: { success: false, message: 'Too many requests. Please try again later.' }
-});
+// Failed-login IP rate limiter: escalating lockout
+//   6 failed attempts → 5 min lock, then 10, 15, 20, 25, 30 (cap)
+const failedLoginLimiter = (() => {
+  const attempts = new Map();
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  skip: () => process.env.NODE_ENV === 'test',
-  message: { success: false, message: 'Too many login attempts. Please try again later.' }
-});
+  // Cleanup stale entries every 5 minutes (skip in test mode)
+  if (process.env.NODE_ENV !== 'test') {
+    setInterval(() => {
+      const now = Date.now();
+      for (const [ip, data] of attempts) {
+        if (!data.lockedUntil && now - data.lastAttempt > 30 * 60 * 1000) {
+          attempts.delete(ip);
+        }
+      }
+    }, 5 * 60 * 1000);
+  }
 
-// Apply general rate limiter to all API routes
-app.use('/api', generalLimiter);
+  return (req, res, next) => {
+    const ip = req.ip;
+    const now = Date.now();
+    let record = attempts.get(ip);
 
-// Apply stricter limiter to auth routes
-app.use('/api/admin/login', authLimiter);
+    if (!record) {
+      record = { count: 0, lockLevel: 0, lockedUntil: null, lastAttempt: now };
+      attempts.set(ip, record);
+    }
 
-// Note: Enquiry routes have rate limiting applied at route level (see enquiryRoutes.js)
+    // Check if currently locked
+    if (record.lockedUntil && now < record.lockedUntil) {
+      const remaining = Math.ceil((record.lockedUntil - now) / 60000);
+      return res.status(429).json({
+        success: false,
+        message: `Too many failed login attempts. Please try again after ${remaining} minute${remaining !== 1 ? 's' : ''}.`
+      });
+    }
+
+    // Lock has expired — clear it
+    if (record.lockedUntil) {
+      record.lockedUntil = null;
+    }
+
+    const originalJson = res.json.bind(res);
+    res.json = function (body) {
+      if (res.statusCode === 400 || res.statusCode === 401 || res.statusCode === 423) {
+        record.count++;
+        record.lastAttempt = Date.now();
+
+        if (record.count >= 6) {
+          const lockMinutes = Math.min((record.lockLevel + 1) * 5, 30);
+          record.lockedUntil = Date.now() + lockMinutes * 60 * 1000;
+          record.lockLevel++;
+          record.count = 0;
+        }
+      }
+
+      // Successful login — reset everything
+      if (res.statusCode === 200 && body && body.success) {
+        attempts.delete(ip);
+      }
+
+      return originalJson(body);
+    };
+
+    next();
+  };
+})();
+
+app.use('/api/admin/login', failedLoginLimiter);
 
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/analytics', adminAnalyticsRoutes);

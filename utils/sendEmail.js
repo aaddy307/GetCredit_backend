@@ -7,13 +7,13 @@ const {
 
 const isTest = process.env.NODE_ENV === 'test';
 
-const sendCustomerEmail = async (email, name, loanType, emi, tenure, tenureUnit) => {
+const sendCustomerEmail = async (email, name, loanType, emi, tenure, tenureUnit, phone = '', city = '') => {
   if (isTest) return;
   try {
     const isCallback = loanType === 'Callback Request';
 
     if (isCallback) {
-      await sendCallbackClient(name, '', loanType, new Date().toISOString(), email);
+      await sendCallbackClient(name, phone, loanType, new Date().toISOString(), email);
       return;
     }
 
@@ -24,6 +24,7 @@ const sendCustomerEmail = async (email, name, loanType, emi, tenure, tenureUnit)
       emi: emi || undefined,
       tenure: tenure || undefined,
       tenureUnit: tenureUnit || undefined,
+      city: city || undefined,
       createdAt: new Date().toISOString(),
     });
   } catch (error) {

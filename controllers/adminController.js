@@ -40,27 +40,10 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
-    if (admin.isLocked && admin.isLocked()) {
-      const minutesLeft = Math.ceil((admin.lockUntil - Date.now()) / 60000);
-      return res.status(423).json({ 
-        success: false, 
-        message: `Account locked. Please try again in ${minutesLeft} minutes.` 
-      });
-    }
-
     const isMatch = await admin.matchPassword(password);
 
     if (!isMatch) {
-      if (admin.incrementLoginAttempts) {
-        admin.incrementLoginAttempts();
-        await admin.save();
-      }
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
-    }
-
-    if (admin.resetLoginAttempts) {
-      admin.resetLoginAttempts();
-      await admin.save();
     }
 
     const token = generateToken(admin._id);

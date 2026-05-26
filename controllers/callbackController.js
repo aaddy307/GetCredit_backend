@@ -45,7 +45,7 @@ const createCallbackRequest = async (req, res) => {
       source: 'Website - Callback Request'
     });
 
-    sendCustomerEmail(callback.email, callback.fullName, 'Callback Request', 0, 0).catch(() => {});
+    sendCustomerEmail(callback.email, callback.fullName, 'Callback Request', 0, 0, callback.phone).catch(() => {});
     sendAdminNotification({
       fullName: callback.fullName,
       phone: callback.phone,

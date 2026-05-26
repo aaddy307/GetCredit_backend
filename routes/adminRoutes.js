@@ -1,21 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const rateLimit = require('express-rate-limit');
 const { login, logout, getProfile, createAdmin } = require('../controllers/adminController');
 const { protect } = require('../middleware/authMiddleware');
 const Admin = require('../models/Admin');
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10,
-  message: { success: false, message: 'Too many login attempts. Please try again after 15 minutes.' }
-});
-
-const createLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  message: { success: false, message: 'Too many admin creation attempts. Please try again later.' }
-});
 
 const checkFirstAdmin = async (req, res, next) => {
   const adminCount = await Admin.countDocuments();
@@ -25,9 +12,9 @@ const checkFirstAdmin = async (req, res, next) => {
   next();
 };
 
-router.post('/login', login); // rate-limited globally in server.js
+router.post('/login', login);
 router.post('/logout', logout);
-router.post('/create', createLimiter, checkFirstAdmin, createAdmin);
+router.post('/create', checkFirstAdmin, createAdmin);
 router.get('/profile', protect, getProfile);
 
 module.exports = router;
