@@ -1,6 +1,6 @@
-const Blog = require('../models/Blog');
+import Blog from '../models/Blog.js';
 
-exports.getAllBlogs = async (req, res) => {
+export const getAllBlogs = async (req, res) => {
   try {
     const { category, search } = req.query;
     let query = {};
@@ -18,85 +18,60 @@ exports.getAllBlogs = async (req, res) => {
     }
 
     const blogs = await Blog.find(query).sort({ date: -1 });
-    res.json({
-      success: true,
-      count: blogs.length,
-      blogs
-    });
+    res.json({ success: true, count: blogs.length, blogs });
   } catch (error) {
-    console.error('Get all blogs error:', error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
-exports.getBlog = async (req, res) => {
+export const getBlog = async (req, res) => {
   try {
     const { id } = req.params;
     const isMongoId = /^[0-9a-fA-F]{24}$/.test(id);
     const blog = isMongoId ? await Blog.findById(id) : await Blog.findOne({ slug: id });
-    
+
     if (!blog) {
       return res.status(404).json({ success: false, message: 'Blog not found' });
     }
-    
-    // Get related posts (same category, excluding current)
+
     const related = await Blog.find({ category: blog.category, _id: { $ne: blog._id } })
       .sort({ date: -1 })
       .limit(3)
       .select('title slug excerpt date category');
-    
-    // Get previous and next posts
+
     const prev = await Blog.findOne({ date: { $lt: blog.date } }).sort({ date: -1 }).select('title slug');
     const next = await Blog.findOne({ date: { $gt: blog.date } }).sort({ date: 1 }).select('title slug');
-    
-    res.json({
-      success: true,
-      blog,
-      related,
-      prev,
-      next
-    });
+
+    res.json({ success: true, blog, related, prev, next });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
-exports.createBlog = async (req, res) => {
+export const createBlog = async (req, res) => {
   try {
     const { title, category, date, excerpt, content } = req.body;
 
     if (!title || !category || !excerpt || !content) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Please provide all required fields' 
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide all required fields'
       });
     }
 
-    const blog = await Blog.create({
-      title,
-      category,
-      date: date || Date.now(),
-      excerpt,
-      content
-    });
+    const blog = await Blog.create({ title, category, date: date || Date.now(), excerpt, content });
 
-    res.status(201).json({
-      success: true,
-      message: 'Blog created successfully',
-      blog
-    });
+    res.status(201).json({ success: true, message: 'Blog created successfully', blog });
   } catch (error) {
-    console.error('Create blog error:', error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
-exports.updateBlog = async (req, res) => {
+export const updateBlog = async (req, res) => {
   try {
     const { title, category, date, excerpt, content } = req.body;
-    
+
     const blog = await Blog.findById(req.params.id);
-    
     if (!blog) {
       return res.status(404).json({ success: false, message: 'Blog not found' });
     }
@@ -106,58 +81,39 @@ exports.updateBlog = async (req, res) => {
     if (date) blog.date = date;
     if (excerpt) blog.excerpt = excerpt;
     if (content) blog.content = content;
-    
+
     await blog.save();
-    
-    res.json({
-      success: true,
-      message: 'Blog updated successfully',
-      blog
-    });
+
+    res.json({ success: true, message: 'Blog updated successfully', blog });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
-exports.deleteBlog = async (req, res) => {
+export const deleteBlog = async (req, res) => {
   try {
     const blog = await Blog.findByIdAndDelete(req.params.id);
-    
     if (!blog) {
       return res.status(404).json({ success: false, message: 'Blog not found' });
     }
-    
-    res.json({
-      success: true,
-      message: 'Blog deleted successfully'
-    });
+    res.json({ success: true, message: 'Blog deleted successfully' });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
-exports.getBlogStats = async (req, res) => {
+export const getBlogStats = async (req, res) => {
   try {
     const total = await Blog.countDocuments();
     const categories = ['Home Loan', 'Education', 'LAP', 'Personal Loan', 'Business Loan', 'Vehicle Loan', 'Tips', 'Finance'];
     const stats = {};
 
     for (const cat of categories) {
-      stats[cat] = await Blog.countDocuments({ category: cat }).catch(err => {
-        console.error(`Error counting ${cat}:`, err);
-        return 0;
-      });
+      stats[cat] = await Blog.countDocuments({ category: cat }).catch(() => 0);
     }
 
-    res.json({
-      success: true,
-      stats: {
-        total,
-        ...stats
-      }
-    });
+    res.json({ success: true, stats: { total, ...stats } });
   } catch (error) {
-    console.error('Get blog stats error:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch blog stats' });
   }
 };

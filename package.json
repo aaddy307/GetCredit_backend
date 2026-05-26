@@ -3,11 +3,13 @@
   "version": "1.0.0",
   "description": "Backend API for Get Credit Loan Consultancy",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
     "seed": "node seed.js",
-    "test": "jest --runInBand --forceExit"
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest --runInBand --forceExit",
+    "test:watch": "NODE_OPTIONS='--experimental-vm-modules' jest --runInBand --watch"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

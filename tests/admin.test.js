@@ -1,12 +1,13 @@
-const request = require('supertest');
-const { connectDB, disconnectDB, clearDB } = require('./db-uri-helper');
-const { createTestAdmin, generateToken } = require('./helpers');
+import request from 'supertest';
+import { connectDB, disconnectDB, clearDB } from './db-uri-helper.js';
+import { createTestAdmin, generateToken } from './helpers.js';
 
 let app;
 
 beforeAll(async () => {
   await connectDB();
-  app = require('../server').app;
+  const server = await import('../server.js');
+  app = server.app;
 });
 
 afterAll(async () => {
@@ -57,6 +58,16 @@ describe('Admin Protected Endpoints', () => {
         .set('Authorization', `Bearer ${token}`);
       expect(res.status).toBe(200);
     });
+
+    it('should return paginated results', async () => {
+      const res = await request(app)
+        .get('/api/admin/all-leads?page=1&limit=10')
+        .set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('page');
+      expect(res.body).toHaveProperty('pages');
+      expect(res.body).toHaveProperty('total');
+    });
   });
 
   describe('GET /api/admin/search', () => {
@@ -65,6 +76,14 @@ describe('Admin Protected Endpoints', () => {
         .get('/api/admin/search?q=test')
         .set('Authorization', `Bearer ${token}`);
       expect(res.status).toBe(200);
+    });
+
+    it('should return empty for short query', async () => {
+      const res = await request(app)
+        .get('/api/admin/search?q=a')
+        .set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(200);
+      expect(res.body.results.length).toBe(0);
     });
   });
 
@@ -88,6 +107,18 @@ describe('Admin Protected Endpoints', () => {
         });
       expect(res.status).toBe(201);
       expect(res.body.success).toBe(true);
+    });
+
+    it('POST /api/admin/users should reject duplicate email', async () => {
+      const res = await request(app)
+        .post('/api/admin/users')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          name: 'Duplicate',
+          email: 'admin@test.com',
+          password: 'Duplicate@123',
+        });
+      expect(res.status).toBe(400);
     });
   });
 

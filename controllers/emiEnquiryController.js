@@ -1,81 +1,81 @@
-const XLSX = require('xlsx');
-const HomeLoanEnquiry = require('../models/HomeLoanEnquiry');
-const LAPEnquiry = require('../models/LAPEnquiry');
-const EducationLoanEnquiry = require('../models/EducationLoanEnquiry');
-const PersonalLoanEnquiry = require('../models/PersonalLoanEnquiry');
-const BusinessLoanEnquiry = require('../models/BusinessLoanEnquiry');
-const VehicleLoanEnquiry = require('../models/VehicleLoanEnquiry');
-const { sendCustomerEmail, sendAdminNotification } = require('../utils/sendEmail');
+import XLSX from 'xlsx';
+import HomeLoanEnquiry from '../models/HomeLoanEnquiry.js';
+import LAPEnquiry from '../models/LAPEnquiry.js';
+import EducationLoanEnquiry from '../models/EducationLoanEnquiry.js';
+import PersonalLoanEnquiry from '../models/PersonalLoanEnquiry.js';
+import BusinessLoanEnquiry from '../models/BusinessLoanEnquiry.js';
+import VehicleLoanEnquiry from '../models/VehicleLoanEnquiry.js';
+import { sendCustomerEmail, sendAdminNotification } from '../utils/sendEmail.js';
 
 const validateEnquiry = (data) => {
   const errors = [];
-  
+
   if (!data.fullName || data.fullName.trim().length < 2) {
     errors.push('fullName: Enter a valid name (min 2 characters)');
   }
-  
+
   if (!data.mobile || !/^[6-9]\d{9}$/.test(data.mobile)) {
     errors.push('mobile: Enter a valid 10-digit Indian mobile number');
   }
-  
+
   if (!data.email || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(data.email)) {
     errors.push('email: Enter a valid email address');
   }
-  
+
   if (!data.city || data.city.trim().length === 0) {
     errors.push('city: City is required');
   }
-  
+
   if (!data.loanAmount || data.loanAmount < 10000) {
     errors.push('loanAmount: Enter a valid loan amount');
   }
-  
+
   if (!data.interestRate || data.interestRate < 0) {
     errors.push('interestRate: Enter a valid interest rate');
   }
-  
+
   if (!data.tenureYears || data.tenureYears < 1) {
     errors.push('tenureYears: Enter a valid tenure');
   }
-  
+
   return errors;
 };
 
-const createHomeLoanEnquiry = async (req, res) => {
+const createLoanEnquiry = (Model, extraFields, loanTypeLabel) => async (req, res) => {
   try {
     const errors = validateEnquiry(req.body);
     if (errors.length > 0) {
       return res.status(400).json({ success: false, errors });
     }
 
-    const { 
-      fullName, mobile, email, city, loanAmount, 
-      propertyType, propertyLocation, employmentType,
+    const {
+      fullName, mobile, email, city, loanAmount,
       interestRate, tenureYears, calculatedEMI, totalInterest, totalPayable,
-      tenureUnit
+      tenureUnit, ...rest
     } = req.body;
 
-    const enquiry = await HomeLoanEnquiry.create({
+    const enquiry = await Model.create({
       fullName, mobile, email, city, loanAmount,
-      propertyType: propertyType || 'Ready to Move',
-      propertyLocation: propertyLocation || '',
-      employmentType: employmentType || 'Salaried',
       interestRate, tenureYears, calculatedEMI,
       tenureUnit: tenureUnit || 'Years',
-      totalInterest: totalInterest || 0, totalPayable: totalPayable || 0,
-      source: 'home_loan'
+      totalInterest: totalInterest || 0,
+      totalPayable: totalPayable || 0,
+      ...extraFields.reduce((acc, field) => {
+        if (rest[field] !== undefined) acc[field] = rest[field];
+        return acc;
+      }, {}),
+      source: req.body.source || extraFields.source
     });
 
     const unit = tenureUnit || 'Years';
     let emailWarning = null;
     try {
-      await sendCustomerEmail(enquiry.email, enquiry.fullName, 'Home Loan', enquiry.calculatedEMI, enquiry.tenureYears, unit, enquiry.mobile, enquiry.city, enquiry.loanAmount);
+      await sendCustomerEmail(enquiry.email, enquiry.fullName, loanTypeLabel, enquiry.calculatedEMI, enquiry.tenureYears, unit, enquiry.mobile, enquiry.city, enquiry.loanAmount);
       await sendAdminNotification({
         fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
-        city: enquiry.city, loanType: 'Home Loan', loanAmount: enquiry.loanAmount,
+        city: enquiry.city, loanType: loanTypeLabel, loanAmount: enquiry.loanAmount,
         interestRate: enquiry.interestRate, tenure: enquiry.tenureYears,
-        tenureUnit: unit,
-        emi: enquiry.calculatedEMI, createdAt: enquiry.createdAt
+        tenureUnit: unit, emi: enquiry.calculatedEMI, createdAt: enquiry.createdAt
       });
     } catch (e) {
       emailWarning = e.message;
@@ -83,252 +83,25 @@ const createHomeLoanEnquiry = async (req, res) => {
 
     res.status(201).json({ success: true, message: 'Enquiry submitted successfully', data: enquiry, ...(emailWarning ? { emailWarning } : {}) });
   } catch (error) {
-    console.error('Home Loan Enquiry Error:', error);
     res.status(500).json({ success: false, errors: ['Server error. Please try again.'] });
   }
 };
 
-const createLAPEnquiry = async (req, res) => {
-  try {
-    const errors = validateEnquiry(req.body);
-    if (errors.length > 0) {
-      return res.status(400).json({ success: false, errors });
-    }
+export const createHomeLoanEnquiry = createLoanEnquiry(HomeLoanEnquiry, ['propertyType', 'propertyLocation', 'employmentType'], 'Home Loan');
+export const createLAPEnquiry = createLoanEnquiry(LAPEnquiry, ['propertyValue', 'mortgagePropertyType', 'propertyType', 'employmentType'], 'Loan Against Property');
+export const createEducationLoanEnquiry = createLoanEnquiry(EducationLoanEnquiry, ['qualification', 'degreeType', 'institutionName'], 'Education Loan');
+export const createPersonalLoanEnquiry = createLoanEnquiry(PersonalLoanEnquiry, ['employmentType'], 'Personal Loan');
+export const createBusinessLoanEnquiry = createLoanEnquiry(BusinessLoanEnquiry, ['employmentType', 'businessVintage'], 'Business Loan');
+export const createVehicleLoanEnquiry = createLoanEnquiry(VehicleLoanEnquiry, ['vehicleType', 'downPayment'], 'Vehicle Loan');
 
-    const { 
-      fullName, mobile, email, city, loanAmount, 
-      propertyType, propertyValue, employmentType,
-      interestRate, tenureYears, calculatedEMI, totalInterest, totalPayable,
-      tenureUnit
-    } = req.body;
-
-    const enquiry = await LAPEnquiry.create({
-      fullName, mobile, email, city, loanAmount,
-      propertyValue: propertyValue || undefined,
-      mortgagePropertyType: propertyType || 'Residential',
-      employmentType: employmentType || 'Salaried',
-      interestRate, tenureYears, calculatedEMI,
-      tenureUnit: tenureUnit || 'Years',
-      totalInterest: totalInterest || 0, totalPayable: totalPayable || 0,
-      source: 'loan_against_property'
-    });
-
-    const unit = tenureUnit || 'Years';
-    let emailWarning = null;
-    try {
-      await sendCustomerEmail(enquiry.email, enquiry.fullName, 'Loan Against Property', enquiry.calculatedEMI, enquiry.tenureYears, unit, enquiry.mobile, enquiry.city, enquiry.loanAmount);
-      await sendAdminNotification({
-        fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
-        city: enquiry.city, loanType: 'Loan Against Property', loanAmount: enquiry.loanAmount,
-        interestRate: enquiry.interestRate, tenure: enquiry.tenureYears,
-        tenureUnit: unit,
-        emi: enquiry.calculatedEMI, createdAt: enquiry.createdAt
-      });
-    } catch (e) {
-      emailWarning = e.message;
-    }
-
-    res.status(201).json({ success: true, message: 'Enquiry submitted successfully', data: enquiry, ...(emailWarning ? { emailWarning } : {}) });
-  } catch (error) {
-    console.error('LAP Enquiry Error:', error);
-    res.status(500).json({ success: false, errors: ['Server error. Please try again.'] });
-  }
-};
-
-const createEducationLoanEnquiry = async (req, res) => {
-  try {
-    const errors = validateEnquiry(req.body);
-    if (errors.length > 0) {
-      return res.status(400).json({ success: false, errors });
-    }
-
-    const { 
-      fullName, mobile, email, city, loanAmount, 
-      qualification, degreeType, institutionName,
-      interestRate, tenureYears, calculatedEMI, totalInterest, totalPayable,
-      tenureUnit
-    } = req.body;
-
-    if (!qualification) {
-      return res.status(400).json({ success: false, errors: ['qualification: Qualification is required'] });
-    }
-
-    const enquiry = await EducationLoanEnquiry.create({
-      fullName, mobile, email, city, loanAmount,
-      qualification, degreeType, institutionName,
-      interestRate, tenureYears, calculatedEMI,
-      tenureUnit: tenureUnit || 'Years',
-      totalInterest: totalInterest || 0, totalPayable: totalPayable || 0,
-      source: 'education_loan'
-    });
-
-    const unit = tenureUnit || 'Years';
-    let emailWarning = null;
-    try {
-      await sendCustomerEmail(enquiry.email, enquiry.fullName, 'Education Loan', enquiry.calculatedEMI, enquiry.tenureYears, unit, enquiry.mobile, enquiry.city, enquiry.loanAmount);
-      await sendAdminNotification({
-        fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
-        city: enquiry.city, loanType: 'Education Loan', loanAmount: enquiry.loanAmount,
-        interestRate: enquiry.interestRate, tenure: enquiry.tenureYears,
-        tenureUnit: unit,
-        emi: enquiry.calculatedEMI, createdAt: enquiry.createdAt
-      });
-    } catch (e) {
-      emailWarning = e.message;
-    }
-
-    res.status(201).json({ success: true, message: 'Enquiry submitted successfully', data: enquiry, ...(emailWarning ? { emailWarning } : {}) });
-  } catch (error) {
-    console.error('Education Loan Enquiry Error:', error);
-    res.status(500).json({ success: false, errors: ['Server error. Please try again.'] });
-  }
-};
-
-const createPersonalLoanEnquiry = async (req, res) => {
-  try {
-    const errors = validateEnquiry(req.body);
-    if (errors.length > 0) {
-      return res.status(400).json({ success: false, errors });
-    }
-
-    const { 
-      fullName, mobile, email, city, loanAmount,
-      employmentType,
-      interestRate, tenureYears, calculatedEMI, totalInterest, totalPayable,
-      tenureUnit
-    } = req.body;
-
-    const enquiry = await PersonalLoanEnquiry.create({
-      fullName, mobile, email, city, loanAmount,
-      employmentType: employmentType || 'Salaried',
-      interestRate, tenureYears, calculatedEMI,
-      tenureUnit: tenureUnit || 'Months',
-      totalInterest: totalInterest || 0, totalPayable: totalPayable || 0,
-      source: 'personal_loan'
-    });
-
-    const unit = tenureUnit || 'Months';
-    let emailWarning = null;
-    try {
-      await sendCustomerEmail(enquiry.email, enquiry.fullName, 'Personal Loan', enquiry.calculatedEMI, enquiry.tenureYears, unit, enquiry.mobile, enquiry.city, enquiry.loanAmount);
-      await sendAdminNotification({
-        fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
-        city: enquiry.city, loanType: 'Personal Loan', loanAmount: enquiry.loanAmount,
-        interestRate: enquiry.interestRate, tenure: enquiry.tenureYears,
-        tenureUnit: unit,
-        emi: enquiry.calculatedEMI, createdAt: enquiry.createdAt
-      });
-    } catch (e) {
-      emailWarning = e.message;
-    }
-
-    res.status(201).json({ success: true, message: 'Enquiry submitted successfully', data: enquiry, ...(emailWarning ? { emailWarning } : {}) });
-  } catch (error) {
-    console.error('Personal Loan Enquiry Error:', error);
-    res.status(500).json({ success: false, errors: ['Server error. Please try again.'] });
-  }
-};
-
-const createBusinessLoanEnquiry = async (req, res) => {
-  try {
-    const errors = validateEnquiry(req.body);
-    if (errors.length > 0) {
-      return res.status(400).json({ success: false, errors });
-    }
-
-    const { 
-      fullName, mobile, email, city, loanAmount,
-      employmentType,
-      interestRate, tenureYears, calculatedEMI, totalInterest, totalPayable,
-      businessVintage,
-      tenureUnit
-    } = req.body;
-
-    const enquiry = await BusinessLoanEnquiry.create({
-      fullName, mobile, email, city, loanAmount,
-      employmentType: employmentType || 'Salaried',
-      interestRate, tenureYears, calculatedEMI,
-      tenureUnit: tenureUnit || 'Months',
-      totalInterest: totalInterest || 0, totalPayable: totalPayable || 0,
-      businessVintage: businessVintage || 0,
-      source: 'business_loan'
-    });
-
-    const unit = tenureUnit || 'Months';
-    let emailWarning = null;
-    try {
-      await sendCustomerEmail(enquiry.email, enquiry.fullName, 'Business Loan', enquiry.calculatedEMI, enquiry.tenureYears, unit, enquiry.mobile, enquiry.city, enquiry.loanAmount);
-      await sendAdminNotification({
-        fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
-        city: enquiry.city, loanType: 'Business Loan', loanAmount: enquiry.loanAmount,
-        interestRate: enquiry.interestRate, tenure: enquiry.tenureYears,
-        tenureUnit: unit,
-        emi: enquiry.calculatedEMI, createdAt: enquiry.createdAt
-      });
-    } catch (e) {
-      emailWarning = e.message;
-    }
-
-    res.status(201).json({ success: true, message: 'Enquiry submitted successfully', data: enquiry, ...(emailWarning ? { emailWarning } : {}) });
-  } catch (error) {
-    console.error('Business Loan Enquiry Error:', error);
-    res.status(500).json({ success: false, errors: ['Server error. Please try again.'] });
-  }
-};
-
-const createVehicleLoanEnquiry = async (req, res) => {
-  try {
-    const errors = validateEnquiry(req.body);
-    if (errors.length > 0) {
-      return res.status(400).json({ success: false, errors });
-    }
-
-    const { 
-      fullName, mobile, email, city, loanAmount, downPayment = 0,
-      interestRate, tenureYears, calculatedEMI, totalInterest, totalPayable,
-      vehicleType,
-      tenureUnit
-    } = req.body;
-
-    const enquiry = await VehicleLoanEnquiry.create({
-      fullName, mobile, email, city, loanAmount, downPayment,
-      interestRate, tenureYears, calculatedEMI,
-      tenureUnit: tenureUnit || 'Years',
-      totalInterest: totalInterest || 0, totalPayable: totalPayable || 0,
-      vehicleType: vehicleType || 'New Car',
-      source: 'vehicle_loan'
-    });
-
-    const unit = tenureUnit || 'Years';
-    let emailWarning = null;
-    try {
-      await sendCustomerEmail(enquiry.email, enquiry.fullName, 'Vehicle Loan', enquiry.calculatedEMI, enquiry.tenureYears, unit, enquiry.mobile, enquiry.city, enquiry.loanAmount);
-      await sendAdminNotification({
-        fullName: enquiry.fullName, phone: enquiry.mobile, email: enquiry.email,
-        city: enquiry.city, loanType: 'Vehicle Loan', loanAmount: enquiry.loanAmount,
-        interestRate: enquiry.interestRate, tenure: enquiry.tenureYears,
-        tenureUnit: unit,
-        emi: enquiry.calculatedEMI, createdAt: enquiry.createdAt
-      });
-    } catch (e) {
-      emailWarning = e.message;
-    }
-
-    res.status(201).json({ success: true, message: 'Enquiry submitted successfully', data: enquiry, ...(emailWarning ? { emailWarning } : {}) });
-  } catch (error) {
-    console.error('Vehicle Loan Enquiry Error:', error);
-    res.status(500).json({ success: false, errors: ['Server error. Please try again.'] });
-  }
-};
-
-const getEMIEnquiries = async (req, res) => {
+export const getEMIEnquiries = async (req, res) => {
   try {
     const { type, search, startDate, endDate, page = 1, limit = 20 } = req.query;
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    const searchRegex = search ? new RegExp(search, 'i') : null;
+    const searchRegex = search ? new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') : null;
     const commonSearch = searchRegex ? {
       $or: [
         { fullName: searchRegex }, { mobile: searchRegex },
@@ -384,15 +157,14 @@ const getEMIEnquiries = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Get EMI Enquiries Error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
-const exportEMIEnquiries = async (req, res) => {
+export const exportEMIEnquiries = async (req, res) => {
   try {
     const { type, search, startDate, endDate } = req.query;
-    const searchRegex = search ? new RegExp(search, 'i') : null;
+    const searchRegex = search ? new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') : null;
     const commonSearch = searchRegex ? {
       $or: [
         { fullName: searchRegex }, { mobile: searchRegex },
@@ -407,36 +179,26 @@ const exportEMIEnquiries = async (req, res) => {
     const baseQuery = { ...commonSearch, ...dateQuery };
 
     let allEnquiries = [];
-
     const formatDate = (date) => new Date(date).toLocaleDateString();
 
-    if (!type || type === 'home_loan') {
-      const homeLoans = await HomeLoanEnquiry.find(baseQuery).sort({ createdAt: -1 }).lean();
-      allEnquiries = [...allEnquiries, ...homeLoans.map(e => ({
+    const modelConfigs = [
+      { type: 'home_loan', Model: HomeLoanEnquiry, loanType: 'Home Loan', map: (e) => ({
         Name: e.fullName, Mobile: e.mobile, Email: e.email, City: e.city,
         'Loan Type': 'Home Loan', 'Loan Amount': e.loanAmount, EMI: e.calculatedEMI,
         'Interest Rate': e.interestRate, 'Tenure (Years)': e.tenureYears,
         'Property Type': e.propertyType || '-', 'Property Location': e.propertyLocation || '-',
         'Employment Type': e.employmentType || '-', 'Total Interest': e.totalInterest || '-',
         'Total Payable': e.totalPayable || '-', Date: formatDate(e.createdAt)
-      }))];
-    }
-
-    if (!type || type === 'loan_against_property') {
-      const laps = await LAPEnquiry.find(baseQuery).sort({ createdAt: -1 }).lean();
-      allEnquiries = [...allEnquiries, ...laps.map(e => ({
+      })},
+      { type: 'loan_against_property', Model: LAPEnquiry, loanType: 'Loan Against Property', map: (e) => ({
         Name: e.fullName, Mobile: e.mobile, Email: e.email, City: e.city,
         'Loan Type': 'Loan Against Property', 'Loan Amount': e.loanAmount, EMI: e.calculatedEMI,
         'Interest Rate': e.interestRate, 'Tenure (Years)': e.tenureYears,
         'Property Type': e.mortgagePropertyType || '-', 'Employment Type': e.employmentType || '-',
         'Total Interest': e.totalInterest || '-', 'Total Payable': e.totalPayable || '-',
         Date: formatDate(e.createdAt)
-      }))];
-    }
-
-    if (!type || type === 'education_loan') {
-      const eduLoans = await EducationLoanEnquiry.find(baseQuery).sort({ createdAt: -1 }).lean();
-      allEnquiries = [...allEnquiries, ...eduLoans.map(e => ({
+      })},
+      { type: 'education_loan', Model: EducationLoanEnquiry, loanType: 'Education Loan', map: (e) => ({
         Name: e.fullName, Mobile: e.mobile, Email: e.email, City: e.city,
         'Loan Type': 'Education Loan', 'Loan Amount': e.loanAmount, EMI: e.calculatedEMI,
         'Interest Rate': e.interestRate, 'Tenure (Years)': e.tenureYears,
@@ -444,62 +206,49 @@ const exportEMIEnquiries = async (req, res) => {
         'University': e.institutionName || '-',
         'Total Interest': e.totalInterest || '-', 'Total Payable': e.totalPayable || '-',
         Date: formatDate(e.createdAt)
-      }))];
-    }
-
-    if (!type || type === 'personal_loan') {
-      const personalLoans = await PersonalLoanEnquiry.find(baseQuery).sort({ createdAt: -1 }).lean();
-      allEnquiries = [...allEnquiries, ...personalLoans.map(e => ({
+      })},
+      { type: 'personal_loan', Model: PersonalLoanEnquiry, loanType: 'Personal Loan', map: (e) => ({
         Name: e.fullName, Mobile: e.mobile, Email: e.email, City: e.city,
         'Loan Type': 'Personal Loan', 'Loan Amount': e.loanAmount, EMI: e.calculatedEMI,
         'Interest Rate': e.interestRate, 'Tenure (Years)': e.tenureYears,
         'Employment Type': e.employmentType || '-', 'Total Interest': e.totalInterest || '-',
         'Total Payable': e.totalPayable || '-', Date: formatDate(e.createdAt)
-      }))];
-    }
-
-    if (!type || type === 'business_loan') {
-      const businessLoans = await BusinessLoanEnquiry.find(baseQuery).sort({ createdAt: -1 }).lean();
-      allEnquiries = [...allEnquiries, ...businessLoans.map(e => ({
+      })},
+      { type: 'business_loan', Model: BusinessLoanEnquiry, loanType: 'Business Loan', map: (e) => ({
         Name: e.fullName, Mobile: e.mobile, Email: e.email, City: e.city,
         'Loan Type': 'Business Loan', 'Loan Amount': e.loanAmount, EMI: e.calculatedEMI,
         'Interest Rate': e.interestRate, 'Tenure (Years)': e.tenureYears,
         'Employment Type': e.employmentType || '-', 'Business Vintage (Months)': e.businessVintage || '-',
         'Total Interest': e.totalInterest || '-', 'Total Payable': e.totalPayable || '-',
         Date: formatDate(e.createdAt)
-      }))];
-    }
-
-    if (!type || type === 'vehicle_loan') {
-      const vehicleLoans = await VehicleLoanEnquiry.find(baseQuery).sort({ createdAt: -1 }).lean();
-      allEnquiries = [...allEnquiries, ...vehicleLoans.map(e => ({
+      })},
+      { type: 'vehicle_loan', Model: VehicleLoanEnquiry, loanType: 'Vehicle Loan', map: (e) => ({
         Name: e.fullName, Mobile: e.mobile, Email: e.email, City: e.city,
         'Loan Type': 'Vehicle Loan', 'Loan Amount': e.loanAmount, EMI: e.calculatedEMI,
         'Interest Rate': e.interestRate, 'Tenure (Years)': e.tenureYears,
         'Vehicle Type': e.vehicleType || '-', 'Down Payment': e.downPayment || '-',
         'Total Interest': e.totalInterest || '-', 'Total Payable': e.totalPayable || '-',
         Date: formatDate(e.createdAt)
-      }))];
+      })},
+    ];
+
+    for (const config of modelConfigs) {
+      if (!type || type === config.type) {
+        const docs = await config.Model.find(baseQuery).sort({ createdAt: -1 }).lean();
+        allEnquiries = [...allEnquiries, ...docs.map(config.map)];
+      }
     }
 
     const worksheet = XLSX.utils.json_to_sheet(allEnquiries);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Enquiries');
-
     const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
     const date = new Date().toISOString().split('T')[0];
-    
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="enquiries-${date}.xlsx"`);
     res.send(buffer);
   } catch (error) {
-    console.error('Export EMI Enquiries Error:', error);
-    res.status(500).json({ success: false, message: 'Export failed' });
+    res.status(500).json({ success: false, message: 'Export failed. Please try again.' });
   }
-};
-
-module.exports = {
-  createHomeLoanEnquiry, createLAPEnquiry, createEducationLoanEnquiry,
-  createPersonalLoanEnquiry, createBusinessLoanEnquiry, createVehicleLoanEnquiry,
-  getEMIEnquiries, exportEMIEnquiries
 };

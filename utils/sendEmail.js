@@ -1,13 +1,13 @@
-const {
+import {
   sendCallbackClient,
   sendCallbackAdmin,
   sendEnquiryClient,
   sendEnquiryAdmin,
-} = require('../services/emailService');
+} from '../services/emailService.js';
 
 const isTest = process.env.NODE_ENV === 'test';
 
-const sendCustomerEmail = async (email, name, loanType, emi, tenure, tenureUnit, phone = '', city = '', loanAmount) => {
+export const sendCustomerEmail = async (email, name, loanType, emi, tenure, tenureUnit, phone = '', city = '', loanAmount) => {
   if (isTest) return;
   try {
     const isCallback = loanType === 'Callback Request';
@@ -29,11 +29,11 @@ const sendCustomerEmail = async (email, name, loanType, emi, tenure, tenureUnit,
       createdAt: new Date().toISOString(),
     });
   } catch (error) {
-    console.error(`❌ Customer email to ${email} failed:`, error.message);
+    console.error(`Customer email to ${email} failed:`, error.message);
   }
 };
 
-const sendAdminNotification = async (enquiry) => {
+export const sendAdminNotification = async (enquiry) => {
   if (isTest) return;
   try {
     const isCallbackRequest = enquiry.loanType === 'Callback Request';
@@ -66,8 +66,6 @@ const sendAdminNotification = async (enquiry) => {
       createdAt: enquiry.createdAt,
     });
   } catch (error) {
-    console.error(`❌ Admin notification for ${enquiry?.fullName || 'unknown'} failed:`, error.message);
+    console.error(`Admin notification for ${enquiry?.fullName || 'unknown'} failed:`, error.message);
   }
 };
-
-module.exports = { sendCustomerEmail, sendAdminNotification };

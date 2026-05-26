@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const callbackRequestSchema = new mongoose.Schema({
   fullName: {
@@ -49,4 +49,4 @@ callbackRequestSchema.index({ status: 1 });
 callbackRequestSchema.index({ createdAt: -1 });
 callbackRequestSchema.index({ city: 1 });
 
-module.exports = mongoose.model('CallbackRequest', callbackRequestSchema);
+export default mongoose.model('CallbackRequest', callbackRequestSchema);

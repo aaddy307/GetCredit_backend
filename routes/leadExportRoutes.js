@@ -1,14 +1,15 @@
-const express = require('express');
-const router = express.Router();
-const { protect } = require('../middleware/authMiddleware');
-const { requirePermission } = require('../middleware/permissionMiddleware');
-const Enquiry = require('../models/Enquiry');
-const xlsx = require('xlsx');
+import { Router } from 'express';
+import { protect } from '../middleware/authMiddleware.js';
+import { requirePermission } from '../middleware/permissionMiddleware.js';
+import Enquiry from '../models/Enquiry.js';
+import XLSX from 'xlsx';
+
+const router = Router();
 
 router.get('/export', protect, requirePermission('leads', 'export'), async (req, res) => {
   try {
     const { status, loanType, startDate, endDate, format = 'xlsx' } = req.query;
-    
+
     const query = {};
     if (status) query.status = status;
     if (loanType) query.loanType = loanType;
@@ -36,23 +37,22 @@ router.get('/export', protect, requirePermission('leads', 'export'), async (req,
       const header = Object.keys(data[0] || {}).join(',');
       const rows = data.map(row => Object.values(row).map(v => `"${v}"`).join(','));
       const csv = [header, ...rows].join('\n');
-      
+
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', 'attachment; filename=leads.csv');
       return res.send(csv);
     }
 
-    const ws = xlsx.utils.json_to_sheet(data);
-    const wb = xlsx.utils.book_new();
-    xlsx.utils.book_append_sheet(wb, ws, 'Leads');
-    
-    const buffer = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
-    
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Leads');
+    const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', 'attachment; filename=leads.xlsx');
     res.send(buffer);
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 });
 
@@ -94,8 +94,8 @@ router.post('/import', protect, requirePermission('leads', 'import'), async (req
 
     res.json({ success: true, results });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 });
 
-module.exports = router;
+export default router;

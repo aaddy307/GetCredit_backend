@@ -1,13 +1,13 @@
-require('dotenv').config();
-const mongoose = require('mongoose');
-const Enquiry = require('../models/Enquiry');
-const HomeLoanEnquiry = require('../models/HomeLoanEnquiry');
-const LAPEnquiry = require('../models/LAPEnquiry');
-const EducationLoanEnquiry = require('../models/EducationLoanEnquiry');
-const PersonalLoanEnquiry = require('../models/PersonalLoanEnquiry');
-const BusinessLoanEnquiry = require('../models/BusinessLoanEnquiry');
-const VehicleLoanEnquiry = require('../models/VehicleLoanEnquiry');
-const CallbackRequest = require('../models/CallbackRequest');
+import 'dotenv/config';
+import mongoose from 'mongoose';
+import Enquiry from '../models/Enquiry.js';
+import HomeLoanEnquiry from '../models/HomeLoanEnquiry.js';
+import LAPEnquiry from '../models/LAPEnquiry.js';
+import EducationLoanEnquiry from '../models/EducationLoanEnquiry.js';
+import PersonalLoanEnquiry from '../models/PersonalLoanEnquiry.js';
+import BusinessLoanEnquiry from '../models/BusinessLoanEnquiry.js';
+import VehicleLoanEnquiry from '../models/VehicleLoanEnquiry.js';
+import CallbackRequest from '../models/CallbackRequest.js';
 
 const collections = [
   { name: 'Enquiries', model: Enquiry },

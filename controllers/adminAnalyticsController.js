@@ -1,10 +1,10 @@
-const Enquiry = require('../models/Enquiry');
-const HomeLoanEnquiry = require('../models/HomeLoanEnquiry');
-const LAPEnquiry = require('../models/LAPEnquiry');
-const EducationLoanEnquiry = require('../models/EducationLoanEnquiry');
-const PersonalLoanEnquiry = require('../models/PersonalLoanEnquiry');
-const BusinessLoanEnquiry = require('../models/BusinessLoanEnquiry');
-const VehicleLoanEnquiry = require('../models/VehicleLoanEnquiry');
+import Enquiry from '../models/Enquiry.js';
+import HomeLoanEnquiry from '../models/HomeLoanEnquiry.js';
+import LAPEnquiry from '../models/LAPEnquiry.js';
+import EducationLoanEnquiry from '../models/EducationLoanEnquiry.js';
+import PersonalLoanEnquiry from '../models/PersonalLoanEnquiry.js';
+import BusinessLoanEnquiry from '../models/BusinessLoanEnquiry.js';
+import VehicleLoanEnquiry from '../models/VehicleLoanEnquiry.js';
 
 const emiModels = [HomeLoanEnquiry, LAPEnquiry, EducationLoanEnquiry, PersonalLoanEnquiry, BusinessLoanEnquiry, VehicleLoanEnquiry];
 const emiLabels = ['Home Loan', 'Loan Against Property', 'Education Loan', 'Personal Loan', 'Business Loan', 'Vehicle Loan'];
@@ -17,7 +17,7 @@ const countAll = async (query = {}) => {
   return counts.reduce((a, b) => a + b, 0);
 };
 
-exports.getMonthlyLeads = async (req, res) => {
+export const getMonthlyLeads = async (req, res) => {
   try {
     const currentYear = new Date().getFullYear();
     const startOfYear = new Date(currentYear, 0, 1);
@@ -41,11 +41,11 @@ exports.getMonthlyLeads = async (req, res) => {
 
     res.json({ success: true, data: monthData });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
-exports.getLoanDistribution = async (req, res) => {
+export const getLoanDistribution = async (req, res) => {
   try {
     const totalLeads = await countAll();
 
@@ -72,7 +72,7 @@ exports.getLoanDistribution = async (req, res) => {
 
     res.json({ success: true, data: distribution });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
@@ -84,10 +84,9 @@ const countStatusAll = async (statusFilter) => {
   return counts.reduce((a, b) => a + b, 0);
 };
 
-exports.getSummary = async (req, res) => {
+export const getSummary = async (req, res) => {
   try {
     const totalLeads = await countAll();
-
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const recentFilter = { createdAt: { $gte: sevenDaysAgo } };
@@ -98,16 +97,13 @@ exports.getSummary = async (req, res) => {
     const completed = await countStatusAll({ $in: ['Approved', 'Closed'] });
     const rejected = await countStatusAll('Rejected');
 
-    res.json({
-      success: true,
-      data: { totalLeads, newLeads, pending, running, completed, rejected }
-    });
+    res.json({ success: true, data: { totalLeads, newLeads, pending, running, completed, rejected } });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
-exports.getRecentLeads = async (req, res) => {
+export const getRecentLeads = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 5;
     const [enquiries, ...emiDocs] = await Promise.all([
@@ -124,6 +120,6 @@ exports.getRecentLeads = async (req, res) => {
 
     res.json({ success: true, data: allLeads.slice(0, limit) });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };

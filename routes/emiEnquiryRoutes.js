@@ -1,11 +1,12 @@
-const express = require('express');
-const router = express.Router();
-const { 
+import { Router } from 'express';
+import {
   createHomeLoanEnquiry, createLAPEnquiry, createEducationLoanEnquiry,
   createPersonalLoanEnquiry, createBusinessLoanEnquiry, createVehicleLoanEnquiry,
   getEMIEnquiries, exportEMIEnquiries
-} = require('../controllers/emiEnquiryController');
-const { protect } = require('../middleware/authMiddleware');
+} from '../controllers/emiEnquiryController.js';
+import { protect } from '../middleware/authMiddleware.js';
+
+const router = Router();
 
 router.post('/home-loan', createHomeLoanEnquiry);
 router.post('/lap', createLAPEnquiry);
@@ -17,4 +18,4 @@ router.post('/vehicle-loan', createVehicleLoanEnquiry);
 router.get('/admin/emi-enquiries', protect, getEMIEnquiries);
 router.get('/admin/emi-enquiries/export', protect, exportEMIEnquiries);
 
-module.exports = router;
+export default router;

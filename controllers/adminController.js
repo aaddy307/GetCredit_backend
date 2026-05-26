@@ -1,9 +1,9 @@
-const jwt = require('jsonwebtoken');
-const Admin = require('../models/Admin');
+import jwt from 'jsonwebtoken';
+import Admin from '../models/Admin.js';
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '30d'
+    expiresIn: '1h'
   });
 };
 
@@ -26,7 +26,7 @@ const validatePassword = (password) => {
   return { valid: true };
 };
 
-const login = async (req, res) => {
+export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -60,22 +60,22 @@ const login = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
-const logout = async (req, res) => {
+export const logout = async (req, res) => {
   try {
     res.json({
       success: true,
       message: 'Logged out successfully'
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
-const getProfile = async (req, res) => {
+export const getProfile = async (req, res) => {
   try {
     const admin = await Admin.findById(req.admin._id).select('-password');
     res.json({
@@ -83,11 +83,11 @@ const getProfile = async (req, res) => {
       admin
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
-const createAdmin = async (req, res) => {
+export const createAdmin = async (req, res) => {
   try {
     const { email, password, name, role } = req.body;
 
@@ -126,13 +126,6 @@ const createAdmin = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
-};
-
-module.exports = {
-  login,
-  logout,
-  getProfile,
-  createAdmin
 };

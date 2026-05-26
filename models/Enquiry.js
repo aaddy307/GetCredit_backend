@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const enquirySchema = new mongoose.Schema({
   fullName: {
@@ -151,4 +151,4 @@ enquirySchema.index({ assignedTo: 1, status: 1 });
 enquirySchema.index({ followUpDate: 1 });
 enquirySchema.index({ assignedTo: 1 });
 
-module.exports = mongoose.model('Enquiry', enquirySchema);
+export default mongoose.model('Enquiry', enquirySchema);

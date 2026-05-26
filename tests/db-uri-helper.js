@@ -1,8 +1,12 @@
-const mongoose = require('mongoose');
-const fs = require('fs');
-const path = require('path');
+import mongoose from 'mongoose';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-async function connectDB() {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export async function connectDB() {
   const dbPath = path.join(__dirname, '.db-uri');
   if (fs.existsSync(dbPath)) {
     const uri = fs.readFileSync(dbPath, 'utf-8').trim();
@@ -12,17 +16,15 @@ async function connectDB() {
   }
 }
 
-async function disconnectDB() {
+export async function disconnectDB() {
   if (mongoose.connection.readyState === 1) {
     await mongoose.disconnect();
   }
 }
 
-async function clearDB() {
+export async function clearDB() {
   const collections = mongoose.connection.collections;
   for (const key in collections) {
     await collections[key].deleteMany({});
   }
 }
-
-module.exports = { connectDB, disconnectDB, clearDB };

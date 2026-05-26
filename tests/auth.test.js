@@ -1,12 +1,13 @@
-const request = require('supertest');
-const { connectDB, disconnectDB, clearDB } = require('./db-uri-helper');
-const { createTestAdmin, generateToken } = require('./helpers');
+import request from 'supertest';
+import { connectDB, disconnectDB, clearDB } from './db-uri-helper.js';
+import { createTestAdmin, generateToken } from './helpers.js';
 
 let app;
 
 beforeAll(async () => {
   await connectDB();
-  app = require('../server').app;
+  const server = await import('../server.js');
+  app = server.app;
 });
 
 afterAll(async () => {
@@ -101,6 +102,13 @@ describe('Admin Auth', () => {
       const res = await request(app).get('/api/admin/profile');
       expect(res.status).toBe(401);
     });
+
+    it('should reject invalid token', async () => {
+      const res = await request(app)
+        .get('/api/admin/profile')
+        .set('Authorization', 'Bearer invalidtoken');
+      expect(res.status).toBe(401);
+    });
   });
 
   describe('POST /api/admin/logout', () => {
@@ -115,3 +123,4 @@ describe('Admin Auth', () => {
     });
   });
 });
+

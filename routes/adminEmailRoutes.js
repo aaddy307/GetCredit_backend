@@ -1,8 +1,9 @@
-const express = require('express');
-const router = express.Router();
-const { sendEmail } = require('../controllers/adminEmailController');
-const { protect } = require('../middleware/authMiddleware');
+import { Router } from 'express';
+import { sendEmail } from '../controllers/adminEmailController.js';
+import { protect } from '../middleware/authMiddleware.js';
+
+const router = Router();
 
 router.post('/send', protect, sendEmail);
 
-module.exports = router;
+export default router;

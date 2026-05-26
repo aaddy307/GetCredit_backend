@@ -1,10 +1,11 @@
-const Enquiry = require('../models/Enquiry');
-const HomeLoanEnquiry = require('../models/HomeLoanEnquiry');
-const LAPEnquiry = require('../models/LAPEnquiry');
-const EducationLoanEnquiry = require('../models/EducationLoanEnquiry');
-const PersonalLoanEnquiry = require('../models/PersonalLoanEnquiry');
-const BusinessLoanEnquiry = require('../models/BusinessLoanEnquiry');
-const VehicleLoanEnquiry = require('../models/VehicleLoanEnquiry');
+import Enquiry from '../models/Enquiry.js';
+import HomeLoanEnquiry from '../models/HomeLoanEnquiry.js';
+import LAPEnquiry from '../models/LAPEnquiry.js';
+import EducationLoanEnquiry from '../models/EducationLoanEnquiry.js';
+import PersonalLoanEnquiry from '../models/PersonalLoanEnquiry.js';
+import BusinessLoanEnquiry from '../models/BusinessLoanEnquiry.js';
+import VehicleLoanEnquiry from '../models/VehicleLoanEnquiry.js';
+import XLSX from 'xlsx';
 
 const emiModels = [
   { model: HomeLoanEnquiry, type: 'Home Loan', source: 'EMI Calculator' },
@@ -33,9 +34,12 @@ const normalizeLead = (doc, collection, loanType, source) => ({
   _isEMI: collection !== 'enquiries',
 });
 
-exports.getAllLeads = async (req, res) => {
+export const getAllLeads = async (req, res) => {
   try {
-    const { search, status, loanType, source, startDate, endDate } = req.query;
+    const { search, status, loanType, source, startDate, endDate, page = 1, limit = 20 } = req.query;
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(Math.max(1, parseInt(limit)), 100);
+    const skip = (pageNum - 1) * limitNum;
 
     const searchRegex = search ? new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') : null;
 
@@ -73,15 +77,19 @@ exports.getAllLeads = async (req, res) => {
     ];
 
     allLeads.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const total = allLeads.length;
+    allLeads = allLeads.slice(skip, skip + limitNum);
 
     res.json({
       success: true,
       count: allLeads.length,
+      total,
+      page: pageNum,
+      pages: Math.ceil(total / limitNum),
       leads: allLeads,
     });
   } catch (error) {
-    console.error('Get All Leads Error:', error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
@@ -95,7 +103,7 @@ const modelMap = {
   'vehicle_loan': VehicleLoanEnquiry,
 };
 
-exports.updateLead = async (req, res) => {
+export const updateLead = async (req, res) => {
   try {
     const { _collection, ...updateData } = req.body;
     if (!_collection || !modelMap[_collection]) {
@@ -126,12 +134,11 @@ exports.updateLead = async (req, res) => {
 
     res.json({ success: true, message: 'Lead updated successfully' });
   } catch (error) {
-    console.error('Update Lead Error:', error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
-exports.deleteLead = async (req, res) => {
+export const deleteLead = async (req, res) => {
   try {
     const { collection } = req.query;
     if (!collection || !modelMap[collection]) {
@@ -146,12 +153,11 @@ exports.deleteLead = async (req, res) => {
 
     res.json({ success: true, message: 'Lead deleted successfully' });
   } catch (error) {
-    console.error('Delete Lead Error:', error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
-exports.exportAllLeads = async (req, res) => {
+export const exportAllLeads = async (req, res) => {
   try {
     const { status, loanType, startDate, endDate, format = 'xlsx' } = req.query;
     const buildQuery = () => {
@@ -204,15 +210,14 @@ exports.exportAllLeads = async (req, res) => {
       return res.send(csv);
     }
 
-    const xlsx = require('xlsx');
-    const ws = xlsx.utils.json_to_sheet(rows);
-    const wb = xlsx.utils.book_new();
-    xlsx.utils.book_append_sheet(wb, ws, 'All Leads');
-    const buffer = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'All Leads');
+    const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', 'attachment; filename=all-leads.xlsx');
     res.send(buffer);
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const personalLoanEnquirySchema = new mongoose.Schema({
   fullName: {
@@ -92,4 +92,4 @@ personalLoanEnquirySchema.index({ createdAt: -1 });
 personalLoanEnquirySchema.index({ status: 1 });
 personalLoanEnquirySchema.index({ city: 1 });
 
-module.exports = mongoose.model('PersonalLoanEnquiry', personalLoanEnquirySchema);
+export default mongoose.model('PersonalLoanEnquiry', personalLoanEnquirySchema);

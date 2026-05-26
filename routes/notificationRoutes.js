@@ -1,6 +1,7 @@
-const express = require('express');
-const router = express.Router();
-const { protect } = require('../middleware/authMiddleware');
+import { Router } from 'express';
+import { protect } from '../middleware/authMiddleware.js';
+
+const router = Router();
 
 const clients = new Map();
 
@@ -42,4 +43,4 @@ router.post('/send', protect, (req, res) => {
   res.json({ success: true, clients: clients.size });
 });
 
-module.exports = router;
+export default router;

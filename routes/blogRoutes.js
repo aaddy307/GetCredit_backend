@@ -1,23 +1,21 @@
-const express = require('express');
-const router = express.Router();
-const { 
-  getAllBlogs, 
-  getBlog, 
-  createBlog, 
-  updateBlog, 
+import { Router } from 'express';
+import {
+  getAllBlogs,
+  getBlog,
+  createBlog,
+  updateBlog,
   deleteBlog,
   getBlogStats
-} = require('../controllers/blogController');
-const { protect } = require('../middleware/authMiddleware');
+} from '../controllers/blogController.js';
+import { protect } from '../middleware/authMiddleware.js';
 
-// Public routes - list all blogs (for public website)
+const router = Router();
+
 router.get('/', getAllBlogs);
-router.get('/:id', getBlog);
-
-// Protected routes - require authentication
 router.get('/stats', protect, getBlogStats);
+router.get('/:id', getBlog);
 router.post('/', protect, createBlog);
 router.put('/:id', protect, updateBlog);
 router.delete('/:id', protect, deleteBlog);
 
-module.exports = router;
+export default router;

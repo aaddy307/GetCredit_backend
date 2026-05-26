@@ -1,7 +1,11 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-module.exports = async () => {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export default async () => {
   const dbPath = path.join(__dirname, '.db-uri');
   try {
     if (fs.existsSync(dbPath)) {

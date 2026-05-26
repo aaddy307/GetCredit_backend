@@ -1,8 +1,9 @@
-const express = require('express');
-const router = express.Router();
-const { globalSearch } = require('../controllers/searchController');
-const { protect } = require('../middleware/authMiddleware');
+import { Router } from 'express';
+import { globalSearch } from '../controllers/searchController.js';
+import { protect } from '../middleware/authMiddleware.js';
+
+const router = Router();
 
 router.get('/search', protect, globalSearch);
 
-module.exports = router;
+export default router;

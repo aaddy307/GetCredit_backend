@@ -1,11 +1,12 @@
-const express = require('express');
-const router = express.Router();
-const { protect } = require('../middleware/authMiddleware');
-const { getAllLeads, exportAllLeads, updateLead, deleteLead } = require('../controllers/adminAllLeadsController');
+import { Router } from 'express';
+import { protect } from '../middleware/authMiddleware.js';
+import { getAllLeads, exportAllLeads, updateLead, deleteLead } from '../controllers/adminAllLeadsController.js';
+
+const router = Router();
 
 router.get('/all-leads', protect, getAllLeads);
 router.get('/all-leads/export', protect, exportAllLeads);
 router.put('/lead/:id', protect, updateLead);
 router.delete('/lead/:id', protect, deleteLead);
 
-module.exports = router;
+export default router;

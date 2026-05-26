@@ -1,16 +1,17 @@
-const express = require('express');
-const router = express.Router();
-const jwt = require('jsonwebtoken');
-const Admin = require('../models/Admin');
-const { 
-  createEnquiry, 
-  getAllEnquiries, 
-  getEnquiry, 
-  updateEnquiryStatus, 
+import { Router } from 'express';
+import jwt from 'jsonwebtoken';
+import Admin from '../models/Admin.js';
+import {
+  createEnquiry,
+  getAllEnquiries,
+  getEnquiry,
+  updateEnquiryStatus,
   deleteEnquiry,
   getDashboardStats
-} = require('../controllers/enquiryController');
-const { protect } = require('../middleware/authMiddleware');
+} from '../controllers/enquiryController.js';
+import { protect } from '../middleware/authMiddleware.js';
+
+const router = Router();
 
 const optionalAuth = async (req, res, next) => {
   try {
@@ -29,4 +30,4 @@ router.get('/:id', protect, getEnquiry);
 router.put('/:id', protect, updateEnquiryStatus);
 router.delete('/:id', protect, deleteEnquiry);
 
-module.exports = router;
+export default router;

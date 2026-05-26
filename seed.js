@@ -1,6 +1,6 @@
-require('dotenv').config();
-const mongoose = require('mongoose');
-const Admin = require('./models/Admin');
+import 'dotenv/config';
+import mongoose from 'mongoose';
+import Admin from './models/Admin.js';
 
 const connectDB = async () => {
   try {
@@ -12,26 +12,29 @@ const connectDB = async () => {
   }
 };
 
-console.warn('WARNING: This seed script uses a hardcoded default password.');
-console.warn('Change the password immediately after first login.\n');
-
 const seedAdmin = async () => {
   await connectDB();
 
-  const adminExists = await Admin.findOne({ email: 'admin@getcredit.com' });
+  const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@getcredit.com';
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'Admin@123456';
+
+  console.warn('WARNING: This seed script uses a default password.');
+
+  const adminExists = await Admin.findOne({ email: adminEmail });
 
   if (adminExists) {
     console.log('Admin already exists');
   } else {
     await Admin.create({
-      email: 'admin@getcredit.com',
-      password: 'Admin@123456',
+      email: adminEmail,
+      password: adminPassword,
       name: 'Admin'
     });
     console.log('Admin created successfully');
-    console.log('Email: admin@getcredit.com');
-    console.log('Password: Admin@123456');
-    console.warn('\nIMPORTANT: Change the default password after first login.');
+    console.log(`Email: ${adminEmail}`);
+    if (!process.env.SEED_ADMIN_PASSWORD) {
+      console.warn('\nIMPORTANT: Change the default password after first login.');
+    }
   }
 
   process.exit();

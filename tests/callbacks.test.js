@@ -1,12 +1,13 @@
-const request = require('supertest');
-const { connectDB, disconnectDB, clearDB } = require('./db-uri-helper');
-const { createTestAdmin, generateToken } = require('./helpers');
+import request from 'supertest';
+import { connectDB, disconnectDB, clearDB } from './db-uri-helper.js';
+import { createTestAdmin, generateToken } from './helpers.js';
 
 let app;
 
 beforeAll(async () => {
   await connectDB();
-  app = require('../server').app;
+  const server = await import('../server.js');
+  app = server.app;
 });
 
 afterAll(async () => {
@@ -47,6 +48,30 @@ describe('Callback Endpoints', () => {
         .post('/api/callback')
         .send({ ...validCallback, phone: '12345' });
       expect(res.status).toBe(400);
+    });
+
+    it('should reject duplicate phone in same day', async () => {
+      await request(app)
+        .post('/api/callback')
+        .send(validCallback);
+      const res = await request(app)
+        .post('/api/callback')
+        .send(validCallback);
+      expect(res.status).toBe(400);
+      expect(res.body.message).toContain('already submitted today');
+    });
+
+    it('should allow same phone on different day (by clearing data)', async () => {
+      await request(app)
+        .post('/api/callback')
+        .send(validCallback);
+      // clear callbacks only
+      const CallbackRequest = (await import('../models/CallbackRequest.js')).default;
+      await CallbackRequest.deleteMany({});
+      const res = await request(app)
+        .post('/api/callback')
+        .send(validCallback);
+      expect(res.status).toBe(201);
     });
   });
 

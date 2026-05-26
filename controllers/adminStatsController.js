@@ -1,15 +1,15 @@
-const Enquiry = require('../models/Enquiry');
-const CallbackRequest = require('../models/CallbackRequest');
-const HomeLoanEnquiry = require('../models/HomeLoanEnquiry');
-const LAPEnquiry = require('../models/LAPEnquiry');
-const EducationLoanEnquiry = require('../models/EducationLoanEnquiry');
-const PersonalLoanEnquiry = require('../models/PersonalLoanEnquiry');
-const BusinessLoanEnquiry = require('../models/BusinessLoanEnquiry');
-const VehicleLoanEnquiry = require('../models/VehicleLoanEnquiry');
+import Enquiry from '../models/Enquiry.js';
+import CallbackRequest from '../models/CallbackRequest.js';
+import HomeLoanEnquiry from '../models/HomeLoanEnquiry.js';
+import LAPEnquiry from '../models/LAPEnquiry.js';
+import EducationLoanEnquiry from '../models/EducationLoanEnquiry.js';
+import PersonalLoanEnquiry from '../models/PersonalLoanEnquiry.js';
+import BusinessLoanEnquiry from '../models/BusinessLoanEnquiry.js';
+import VehicleLoanEnquiry from '../models/VehicleLoanEnquiry.js';
 
 const emiModels = [HomeLoanEnquiry, LAPEnquiry, EducationLoanEnquiry, PersonalLoanEnquiry, BusinessLoanEnquiry, VehicleLoanEnquiry];
 
-const getTodayStats = async (req, res) => {
+export const getTodayStats = async (req, res) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -44,18 +44,9 @@ const getTodayStats = async (req, res) => {
 
     res.json({
       success: true,
-      stats: {
-        todayLeads,
-        todayCallbacks,
-        totalLeads,
-        pendingCallbacks,
-        conversionRate
-      }
+      stats: { todayLeads, todayCallbacks, totalLeads, pendingCallbacks, conversionRate }
     });
   } catch (error) {
-    console.error('Get Today Stats Error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
-
-module.exports = { getTodayStats };

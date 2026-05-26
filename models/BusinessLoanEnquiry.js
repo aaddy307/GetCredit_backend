@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const businessLoanEnquirySchema = new mongoose.Schema({
   fullName: {
@@ -97,4 +97,4 @@ businessLoanEnquirySchema.index({ createdAt: -1 });
 businessLoanEnquirySchema.index({ status: 1 });
 businessLoanEnquirySchema.index({ city: 1 });
 
-module.exports = mongoose.model('BusinessLoanEnquiry', businessLoanEnquirySchema);
+export default mongoose.model('BusinessLoanEnquiry', businessLoanEnquirySchema);

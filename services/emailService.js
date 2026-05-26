@@ -1,10 +1,10 @@
-const { resend, FROM_ADDRESS } = require('../lib/resend');
+import { resend, FROM_ADDRESS } from '../lib/resend.js';
 
 const APP_URL = process.env.APP_URL ? process.env.APP_URL.replace(/\/+$/, '') : '';
 const isTest = process.env.NODE_ENV === 'test';
 
 if (!APP_URL && !isTest) {
-  console.warn('⚠️  APP_URL is not set. Set it to your Next.js URL (e.g. https://get-credit.in) for email templates to render.');
+  console.warn('APP_URL is not set. Set it to your Next.js URL for email templates to render.');
 }
 
 async function renderTemplate(template, data) {
@@ -25,7 +25,6 @@ async function renderTemplate(template, data) {
     const { html } = await response.json();
     return html;
   } catch (error) {
-    console.error(`❌ Render error for template "${template}":`, error.message);
     throw error;
   }
 }
@@ -43,7 +42,6 @@ async function sendEmail({ to, subject, template, data }) {
     try {
       html = await renderTemplate(template, data);
     } catch (renderErr) {
-      console.warn(`Render failed for "${template}", using fallback:`, renderErr.message);
       html = buildFallbackHtml(subject, data.body || '');
     }
 
@@ -59,10 +57,7 @@ async function sendEmail({ to, subject, template, data }) {
     if (result?.error) {
       throw new Error(`Resend error: ${result.error.message || JSON.stringify(result.error)}`);
     }
-
-    console.log(`✓ Email sent: "${subject}" to ${recipients.join(', ')}`);
   } catch (error) {
-    console.error(`❌ Email send error for "${subject}":`, error.message);
     throw error;
   }
 }
@@ -105,7 +100,7 @@ function buildFallbackHtml(subject, body) {
 </html>`;
 }
 
-async function sendCallbackClient(name, phone, loanType, createdAt, toEmail) {
+export async function sendCallbackClient(name, phone, loanType, createdAt, toEmail) {
   return sendEmail({
     to: toEmail,
     subject: 'Callback Request Received – Get Credit',
@@ -114,7 +109,7 @@ async function sendCallbackClient(name, phone, loanType, createdAt, toEmail) {
   });
 }
 
-async function sendCallbackAdmin({ name, phone, email, city, loanType, source, createdAt }) {
+export async function sendCallbackAdmin({ name, phone, email, city, loanType, source, createdAt }) {
   const adminEmail = process.env.ADMIN_EMAIL || 'support@get-credit.in';
   return sendEmail({
     to: adminEmail,
@@ -124,7 +119,7 @@ async function sendCallbackAdmin({ name, phone, email, city, loanType, source, c
   });
 }
 
-async function sendEnquiryClient({ name, loanType, loanAmount, emi, tenure, tenureUnit, city, createdAt, toEmail }) {
+export async function sendEnquiryClient({ name, loanType, loanAmount, emi, tenure, tenureUnit, city, createdAt, toEmail }) {
   return sendEmail({
     to: toEmail,
     subject: 'Enquiry Submitted Successfully – Get Credit',
@@ -133,7 +128,7 @@ async function sendEnquiryClient({ name, loanType, loanAmount, emi, tenure, tenu
   });
 }
 
-async function sendEnquiryAdmin({ name, phone, email, city, loanType, loanAmount, emi, tenure, tenureUnit, interestRate, source, createdAt }) {
+export async function sendEnquiryAdmin({ name, phone, email, city, loanType, loanAmount, emi, tenure, tenureUnit, interestRate, source, createdAt }) {
   const adminEmail = process.env.ADMIN_EMAIL || 'support@get-credit.in';
   return sendEmail({
     to: adminEmail,
@@ -144,16 +139,15 @@ async function sendEnquiryAdmin({ name, phone, email, city, loanType, loanAmount
 }
 
 function sanitizeHtml(input) {
-  const safe = input
+  return input
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
     .replace(/<[^>]*on\w+\s*=\s*["'][^"']*["'][^>]*>/gi, '')
     .replace(/<[^>]*on\w+\s*=\s*[^\s>]+[^>]*>/gi, '')
     .replace(/javascript\s*:/gi, '')
     .replace(/onerror\s*=/gi, '');
-  return safe;
 }
 
-async function sendAdminComposeEmail({ to, subject, body }) {
+export async function sendAdminComposeEmail({ to, subject, body }) {
   return sendEmail({
     to,
     subject,
@@ -161,11 +155,3 @@ async function sendAdminComposeEmail({ to, subject, body }) {
     data: { body: sanitizeHtml(body).replace(/\n/g, '<br>') },
   });
 }
-
-module.exports = {
-  sendCallbackClient,
-  sendCallbackAdmin,
-  sendEnquiryClient,
-  sendEnquiryAdmin,
-  sendAdminComposeEmail,
-};

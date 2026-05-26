@@ -1,6 +1,6 @@
-const { sendAdminComposeEmail } = require('../services/emailService');
+import { sendAdminComposeEmail } from '../services/emailService.js';
 
-exports.sendEmail = async (req, res) => {
+export const sendEmail = async (req, res) => {
   try {
     const { to, subject, body } = req.body;
 
@@ -15,15 +15,10 @@ exports.sendEmail = async (req, res) => {
       return res.status(400).json({ success: false, message: `Invalid email(s): ${invalid.join(', ')}` });
     }
 
-    await sendAdminComposeEmail({
-      to: recipients,
-      subject,
-      body,
-    });
+    await sendAdminComposeEmail({ to: recipients, subject, body });
 
     res.json({ success: true, message: `Email sent successfully to ${recipients.join(', ')}` });
   } catch (error) {
-    console.error('Send email error:', error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Failed to send email. Please try again.' });
   }
 };

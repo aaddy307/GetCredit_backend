@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const lapEnquirySchema = new mongoose.Schema({
   fullName: {
@@ -103,4 +103,4 @@ lapEnquirySchema.index({ status: 1 });
 lapEnquirySchema.index({ city: 1 });
 lapEnquirySchema.index({ mortgagePropertyType: 1 });
 
-module.exports = mongoose.model('LAPEnquiry', lapEnquirySchema);
+export default mongoose.model('LAPEnquiry', lapEnquirySchema);

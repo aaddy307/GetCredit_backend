@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const educationLoanEnquirySchema = new mongoose.Schema({
   fullName: {
@@ -102,4 +102,4 @@ educationLoanEnquirySchema.index({ status: 1 });
 educationLoanEnquirySchema.index({ city: 1 });
 educationLoanEnquirySchema.index({ qualification: 1 });
 
-module.exports = mongoose.model('EducationLoanEnquiry', educationLoanEnquirySchema);
+export default mongoose.model('EducationLoanEnquiry', educationLoanEnquirySchema);

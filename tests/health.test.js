@@ -1,11 +1,12 @@
-const request = require('supertest');
-const { connectDB, disconnectDB } = require('./db-uri-helper');
+import request from 'supertest';
+import { connectDB, disconnectDB } from './db-uri-helper.js';
 
 let app;
 
 beforeAll(async () => {
   await connectDB();
-  app = require('../server').app;
+  const server = await import('../server.js');
+  app = server.app;
 });
 
 afterAll(async () => {

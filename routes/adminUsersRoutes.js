@@ -1,15 +1,16 @@
-const express = require('express');
-const router = express.Router();
-const { protect } = require('../middleware/authMiddleware');
-const { requirePermission } = require('../middleware/permissionMiddleware');
-const Admin = require('../models/Admin');
+import { Router } from 'express';
+import { protect } from '../middleware/authMiddleware.js';
+import { requirePermission } from '../middleware/permissionMiddleware.js';
+import Admin from '../models/Admin.js';
+
+const router = Router();
 
 router.get('/', protect, requirePermission('users', 'read'), async (req, res) => {
   try {
     const admins = await Admin.find().select('-password -sessionTokens -allTokensInvalidated -loginAttempts -lockUntil');
     res.json({ success: true, admins });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 });
 
@@ -31,12 +32,12 @@ router.post('/', protect, requirePermission('users', 'create'), async (req, res)
     }
 
     const admin = await Admin.create({ email, password, name, role });
-    res.status(201).json({ 
-      success: true, 
-      admin: { id: admin._id, name: admin.name, email: admin.email, role: admin.role } 
+    res.status(201).json({
+      success: true,
+      admin: { id: admin._id, name: admin.name, email: admin.email, role: admin.role }
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 });
 
@@ -44,7 +45,7 @@ router.put('/:id', protect, requirePermission('users', 'update'), async (req, re
   try {
     const { name, role } = req.body;
     const admin = await Admin.findById(req.params.id);
-    
+
     if (!admin) {
       return res.status(404).json({ success: false, message: 'Admin not found' });
     }
@@ -53,12 +54,12 @@ router.put('/:id', protect, requirePermission('users', 'update'), async (req, re
     if (role === 'admin') admin.role = role;
 
     await admin.save();
-    res.json({ 
-      success: true, 
-      admin: { id: admin._id, name: admin.name, email: admin.email, role: admin.role } 
+    res.json({
+      success: true,
+      admin: { id: admin._id, name: admin.name, email: admin.email, role: admin.role }
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 });
 
@@ -75,8 +76,8 @@ router.delete('/:id', protect, requirePermission('users', 'delete'), async (req,
 
     res.json({ success: true, message: 'Admin deleted' });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 });
 
-module.exports = router;
+export default router;

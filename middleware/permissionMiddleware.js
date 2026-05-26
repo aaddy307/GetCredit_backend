@@ -15,7 +15,7 @@ const hasPermission = (admin, resource, action) => {
   return rolePermissions[resource]?.includes(action);
 };
 
-const requirePermission = (resource, action) => {
+export const requirePermission = (resource, action) => {
   return (req, res, next) => {
     if (!req.admin) {
       return res.status(401).json({ success: false, message: 'Not authenticated' });
@@ -31,5 +31,3 @@ const requirePermission = (resource, action) => {
     next();
   };
 };
-
-module.exports = { requirePermission };

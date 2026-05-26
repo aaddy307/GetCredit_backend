@@ -1,8 +1,9 @@
-const express = require('express');
-const router = express.Router();
-const { exportExcel } = require('../controllers/exportController');
-const { protect } = require('../middleware/authMiddleware');
+import { Router } from 'express';
+import { exportExcel } from '../controllers/exportController.js';
+import { protect } from '../middleware/authMiddleware.js';
+
+const router = Router();
 
 router.get('/excel', protect, exportExcel);
 
-module.exports = router;
+export default router;

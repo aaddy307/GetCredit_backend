@@ -1,8 +1,9 @@
-const express = require('express');
-const router = express.Router();
-const { login, logout, getProfile, createAdmin } = require('../controllers/adminController');
-const { protect } = require('../middleware/authMiddleware');
-const Admin = require('../models/Admin');
+import { Router } from 'express';
+import { login, logout, getProfile, createAdmin } from '../controllers/adminController.js';
+import { protect } from '../middleware/authMiddleware.js';
+import Admin from '../models/Admin.js';
+
+const router = Router();
 
 const checkFirstAdmin = async (req, res, next) => {
   const adminCount = await Admin.countDocuments();
@@ -17,4 +18,4 @@ router.post('/logout', logout);
 router.post('/create', checkFirstAdmin, createAdmin);
 router.get('/profile', protect, getProfile);
 
-module.exports = router;
+export default router;

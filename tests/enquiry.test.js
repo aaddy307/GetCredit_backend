@@ -1,12 +1,13 @@
-const request = require('supertest');
-const { connectDB, disconnectDB, clearDB } = require('./db-uri-helper');
-const { createTestAdmin, generateToken } = require('./helpers');
+import request from 'supertest';
+import { connectDB, disconnectDB, clearDB } from './db-uri-helper.js';
+import { createTestAdmin, generateToken } from './helpers.js';
 
 let app;
 
 beforeAll(async () => {
   await connectDB();
-  app = require('../server').app;
+  const server = await import('../server.js');
+  app = server.app;
 });
 
 afterAll(async () => {
@@ -56,6 +57,13 @@ describe('Enquiry Endpoints', () => {
         .send({ ...validEnquiry, loanType: 'Invalid Loan' });
       expect(res.status).toBe(400);
     });
+
+    it('should reject invalid phone', async () => {
+      const res = await request(app)
+        .post('/api/enquiry')
+        .send({ ...validEnquiry, phone: '12345' });
+      expect(res.status).toBe(400);
+    });
   });
 
   describe('GET /api/enquiry (Protected)', () => {
@@ -78,6 +86,15 @@ describe('Enquiry Endpoints', () => {
     it('should reject without auth', async () => {
       const res = await request(app).get('/api/enquiry');
       expect(res.status).toBe(401);
+    });
+
+    it('should return 404 for non-existent enquiry', async () => {
+      const admin = await createTestAdmin();
+      const token = generateToken(admin._id);
+      const res = await request(app)
+        .get('/api/enquiry/507f1f77bcf86cd799439011')
+        .set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(404);
     });
   });
 

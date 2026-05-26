@@ -1,7 +1,7 @@
-const Enquiry = require('../models/Enquiry');
-const xlsx = require('xlsx');
+import Enquiry from '../models/Enquiry.js';
+import XLSX from 'xlsx';
 
-exports.exportExcel = async (req, res) => {
+export const exportExcel = async (req, res) => {
   try {
     const enquiries = await Enquiry.find().sort({ createdAt: -1 });
 
@@ -24,39 +24,24 @@ exports.exportExcel = async (req, res) => {
       'Created Time': new Date(enquiry.createdAt).toLocaleTimeString()
     }));
 
-    const ws = xlsx.utils.json_to_sheet(data);
-    
+    const ws = XLSX.utils.json_to_sheet(data);
+
     const columnWidths = [
-      { wch: 20 },
-      { wch: 15 },
-      { wch: 30 },
-      { wch: 15 },
-      { wch: 20 },
-      { wch: 15 },
-      { wch: 12 },
-      { wch: 12 },
-      { wch: 15 },
-      { wch: 12 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 30 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 15 }
+      { wch: 20 }, { wch: 15 }, { wch: 30 }, { wch: 15 }, { wch: 20 }, { wch: 15 },
+      { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 15 },
+      { wch: 30 }, { wch: 15 }, { wch: 15 }, { wch: 15 }
     ];
-    
+
     ws['!cols'] = columnWidths;
 
-    const wb = xlsx.utils.book_new();
-    xlsx.utils.book_append_sheet(wb, ws, 'Enquiries');
-
-    const buffer = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Enquiries');
+    const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 
     res.setHeader('Content-Disposition', 'attachment; filename=GetCredit_Enquiries.xlsx');
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-
     res.send(buffer);
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Export failed. Please try again.' });
   }
 };
