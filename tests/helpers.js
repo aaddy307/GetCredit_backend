@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import path from 'path';
@@ -33,26 +32,14 @@ export async function clearCollections() {
 }
 
 export async function createTestAdmin(overrides = {}) {
-  const salt = await bcrypt.genSalt(12);
-  const hashedPassword = await bcrypt.hash(overrides.password || 'TestAdmin@123', salt);
+  const plainPassword = overrides.password || 'TestAdmin@123';
 
   const admin = await Admin.create({
     name: overrides.name || 'Test Admin',
     email: overrides.email || 'admin@test.com',
-    password: hashedPassword,
+    password: plainPassword,
     role: 'admin',
     phone: '9876543210',
-    notifications: { email: true, dashboard: true },
-    business: {
-      companyName: 'Test Company',
-      companyEmail: 'test@company.com',
-      companyPhone: '9876543210',
-      address: 'Test Address',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      pincode: '400001',
-      gstNumber: '',
-    },
     ...overrides,
   });
 

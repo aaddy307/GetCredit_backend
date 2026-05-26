@@ -34,7 +34,21 @@ describe('Blog Endpoints', () => {
       expect(res.body.blogs.length).toBe(0);
     });
 
-    it('should return blogs list', async () => {
+    it('should return published blogs list', async () => {
+      const admin = await createTestAdmin();
+      const token = generateToken(admin._id);
+
+      await request(app)
+        .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ ...validBlog, status: 'Published' });
+
+      const res = await request(app).get('/api/blogs');
+      expect(res.status).toBe(200);
+      expect(res.body.blogs.length).toBe(1);
+    });
+
+    it('should not return draft blogs to public', async () => {
       const admin = await createTestAdmin();
       const token = generateToken(admin._id);
 
@@ -45,7 +59,7 @@ describe('Blog Endpoints', () => {
 
       const res = await request(app).get('/api/blogs');
       expect(res.status).toBe(200);
-      expect(res.body.blogs.length).toBe(1);
+      expect(res.body.blogs.length).toBe(0);
     });
   });
 

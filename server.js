@@ -86,9 +86,11 @@ const failedLoginLimiter = (req, res, next) => {
   let record = failedLoginAttempts.get(ip);
 
   if (!record) {
-    record = { count: 0, lockedUntil: null };
+    record = { count: 0, lockedUntil: null, lastAttempt: now };
     failedLoginAttempts.set(ip, record);
   }
+
+  record.lastAttempt = now;
 
   if (record.lockedUntil && now < record.lockedUntil) {
     const remaining = Math.ceil((record.lockedUntil - now) / 60000);

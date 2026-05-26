@@ -172,11 +172,14 @@ export const updateCallbackRequest = async (req, res) => {
     }
 
     const updateFields = {};
-    const allowed = ['fullName', 'phone', 'email', 'city', 'notes'];
+    const allowed = ['fullName', 'phone', 'email', 'city', 'status', 'notes'];
     for (const field of allowed) {
       if (req.body[field] !== undefined) {
         updateFields[field] = field === 'city' || field === 'notes' ? req.body[field] || '' : req.body[field];
       }
+    }
+    if (updateFields.status && !VALID_STATUSES.includes(updateFields.status)) {
+      return res.status(400).json({ success: false, message: `Valid status is required: ${VALID_STATUSES.join(', ')}` });
     }
 
     const callback = await CallbackRequest.findByIdAndUpdate(

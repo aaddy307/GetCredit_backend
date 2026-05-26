@@ -21,6 +21,11 @@ const callbackRequestSchema = new mongoose.Schema({
     trim: true,
     match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Please enter a valid email']
   },
+  preferredTime: {
+    type: String,
+    trim: true,
+    maxlength: 50
+  },
   city: {
     type: String,
     trim: true,

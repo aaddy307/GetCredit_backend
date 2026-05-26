@@ -2,8 +2,12 @@ import Blog from '../models/Blog.js';
 
 export const getAllBlogs = async (req, res) => {
   try {
-    const { category, search } = req.query;
+    const { category, search, page = 1, limit = 20 } = req.query;
     let query = {};
+
+    if (!req.admin) {
+      query.status = 'Published';
+    }
 
     if (category && category !== 'All') {
       query.category = category;
@@ -17,8 +21,16 @@ export const getAllBlogs = async (req, res) => {
       ];
     }
 
-    const blogs = await Blog.find(query).sort({ date: -1 });
-    res.json({ success: true, count: blogs.length, blogs });
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(Math.max(1, parseInt(limit)), 100);
+    const skip = (pageNum - 1) * limitNum;
+
+    const [blogs, total] = await Promise.all([
+      Blog.find(query).sort({ date: -1 }).skip(skip).limit(limitNum),
+      Blog.countDocuments(query)
+    ]);
+
+    res.json({ success: true, count: blogs.length, total, page: pageNum, pages: Math.ceil(total / limitNum), blogs });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
@@ -34,13 +46,20 @@ export const getBlog = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Blog not found' });
     }
 
-    const related = await Blog.find({ category: blog.category, _id: { $ne: blog._id } })
+    Blog.findByIdAndUpdate(blog._id, { $inc: { views: 1 } }).exec();
+
+    const related = await Blog.find({ status: 'Published', category: blog.category, _id: { $ne: blog._id } })
       .sort({ date: -1 })
       .limit(3)
       .select('title slug excerpt date category');
 
-    const prev = await Blog.findOne({ date: { $lt: blog.date } }).sort({ date: -1 }).select('title slug');
-    const next = await Blog.findOne({ date: { $gt: blog.date } }).sort({ date: 1 }).select('title slug');
+    const prev = await Blog.findOne({ status: 'Published', date: { $lte: blog.date }, _id: { $lt: blog._id } })
+      .sort({ date: -1, _id: -1 })
+      .select('title slug');
+
+    const next = await Blog.findOne({ status: 'Published', date: { $gte: blog.date }, _id: { $gt: blog._id } })
+      .sort({ date: 1, _id: 1 })
+      .select('title slug');
 
     res.json({ success: true, blog, related, prev, next });
   } catch (error) {

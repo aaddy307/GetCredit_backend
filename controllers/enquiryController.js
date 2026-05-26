@@ -59,13 +59,17 @@ export const createEnquiry = async (req, res) => {
     }
 
     let calculatedEmi = emi || 0;
-    if (!calculatedEmi && loanAmount && interestRate && tenure) {
+    if (!calculatedEmi && loanAmount && interestRate !== undefined && interestRate !== null && tenure) {
       const monthlyRate = interestRate / 12 / 100;
       const months = tenure * 12;
-      const compoundFactor = Math.pow(1 + monthlyRate, months);
-      calculatedEmi = compoundFactor > 1
-        ? (loanAmount * monthlyRate * compoundFactor) / (compoundFactor - 1)
-        : loanAmount / months;
+      if (monthlyRate === 0) {
+        calculatedEmi = Math.round(loanAmount / months);
+      } else {
+        const compoundFactor = Math.pow(1 + monthlyRate, months);
+        calculatedEmi = compoundFactor > 1
+          ? Math.round((loanAmount * monthlyRate * compoundFactor) / (compoundFactor - 1))
+          : Math.round(loanAmount / months);
+      }
     }
 
     const enquiryData = {
@@ -101,6 +105,17 @@ export const createEnquiry = async (req, res) => {
       enquiryData.propertyValue = propertyValue ? Number(propertyValue) : undefined;
     }
 
+    const existingToday = await Enquiry.findOne({
+      email: email.toLowerCase().trim(),
+      createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
+    });
+    if (existingToday) {
+      return res.status(409).json({
+        success: false,
+        message: 'An enquiry with this email was already submitted today.'
+      });
+    }
+
     const enquiry = await Enquiry.create(enquiryData);
 
     let emailWarning = null;
@@ -130,7 +145,8 @@ export const createEnquiry = async (req, res) => {
 export const getAllEnquiries = async (req, res) => {
   try {
     const { page = 1, limit = 50, search, status, loanType, dateFrom, dateTo, leadSource } = req.query;
-    const skip = (Math.max(1, parseInt(page)) - 1) * Math.min(parseInt(limit), 100);
+    const limitNum = Math.min(Math.max(1, parseInt(limit) || 50), 100);
+    const skip = (Math.max(1, parseInt(page)) - 1) * limitNum;
 
     let query = {};
 
@@ -165,7 +181,7 @@ export const getAllEnquiries = async (req, res) => {
     const enquiries = await Enquiry.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(100);
+      .limit(limitNum);
 
     const total = await Enquiry.countDocuments(query);
 
@@ -174,7 +190,7 @@ export const getAllEnquiries = async (req, res) => {
       count: enquiries.length,
       total,
       page: parseInt(page),
-      pages: Math.ceil(total / 100),
+      pages: Math.ceil(total / limitNum),
       enquiries
     });
   } catch (error) {
