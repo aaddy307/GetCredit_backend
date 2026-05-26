@@ -47,7 +47,7 @@ const createCallbackRequest = async (req, res) => {
 
     let emailWarning = null;
     try {
-      await sendCustomerEmail(callback.email, callback.fullName, 'Callback Request', 0, 0, callback.phone);
+      await sendCustomerEmail(callback.email, callback.fullName, 'Callback Request', 0, 0, '', callback.phone);
       await sendAdminNotification({
         fullName: callback.fullName,
         phone: callback.phone,
