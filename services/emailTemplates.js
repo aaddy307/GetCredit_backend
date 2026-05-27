@@ -169,14 +169,24 @@ export function buildEnquiryClientEmail({ name, loanType, loanAmount, emi, tenur
   return buildEmailLayout('Your loan enquiry has been submitted — Get Credit', body);
 }
 
-export function buildEnquiryAdminEmail({ name, phone, email, city, loanType, loanAmount, emi, tenure, tenureUnit, interestRate, source, createdAt }) {
+export function buildEnquiryAdminEmail({ name, phone, email, city, loanType, loanAmount, emi, tenure, tenureUnit, interestRate, propertyValue, propertyType, employmentType, source, createdAt }) {
   const unit = getTenureUnit(loanType, tenureUnit);
   const dateStr = fmtDate(createdAt);
+
+  const contactRows = [
+    { label: 'Name', value: name },
+    { label: 'Phone', value: phone },
+    { label: 'Email', value: email },
+    { label: 'City', value: city },
+    ...(propertyType ? [{ label: 'Property Type', value: propertyType }] : []),
+    ...(employmentType ? [{ label: 'Employment Type', value: employmentType }] : []),
+  ];
 
   const loanRows = [
     { label: 'Loan Type', value: loanType },
     { label: 'Loan Amount', value: loanAmount, emi: true },
     ...(emi ? [{ label: 'Monthly EMI', value: emi, emi: true }] : []),
+    ...(propertyValue ? [{ label: 'Property Value', value: propertyValue, emi: true }] : []),
     { label: 'Tenure', value: tenure ? `${tenure} ${unit}` : '\u2014' },
     ...(interestRate ? [{ label: 'Interest Rate', value: `${interestRate}%` }] : []),
     { label: 'Source', value: source || 'Website' },
@@ -187,12 +197,7 @@ export function buildEnquiryAdminEmail({ name, phone, email, city, loanType, loa
     ${buildLeadBadge()}
     <p style="font-size:17px;color:#1a1a2e;font-weight:600;margin:0 0 16px;">New ${esc(loanType || 'Loan')} Enquiry</p>
     <p>A new customer has submitted a loan enquiry. Details are provided below for review and follow-up.</p>
-    ${buildSummaryCard('Contact Details', [
-      { label: 'Name', value: name },
-      { label: 'Phone', value: phone },
-      { label: 'Email', value: email },
-      { label: 'City', value: city },
-    ])}
+    ${buildSummaryCard('Contact Details', contactRows)}
     ${buildSummaryCard('Loan Details', loanRows)}
     <p style="margin-top:24px;color:#888;font-size:14px;">Please review this new enquiry and follow up with the customer at the earliest opportunity using the contact details above.</p>
     <p style="margin-top:24px;">Regards,<br><strong style="color:#b8912c;font-size:16px;">Get Credit System</strong></p>

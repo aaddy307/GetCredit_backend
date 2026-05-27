@@ -72,9 +72,9 @@ export async function sendEnquiryClient({ name, loanType, loanAmount, emi, tenur
   });
 }
 
-export async function sendEnquiryAdmin({ name, phone, email, city, loanType, loanAmount, emi, tenure, tenureUnit, interestRate, source, createdAt }) {
+export async function sendEnquiryAdmin({ name, phone, email, city, loanType, loanAmount, emi, tenure, tenureUnit, interestRate, propertyValue, propertyType, employmentType, source, createdAt }) {
   const adminEmail = process.env.ADMIN_EMAIL || 'support@get-credit.in';
-  const html = buildEnquiryAdminEmail({ name, phone, email, city, loanType, loanAmount, emi, tenure, tenureUnit, interestRate, source, createdAt });
+  const html = buildEnquiryAdminEmail({ name, phone, email, city, loanType, loanAmount, emi, tenure, tenureUnit, interestRate, propertyValue, propertyType, employmentType, source, createdAt });
   return sendEmail({
     to: adminEmail,
     subject: `New ${loanType || 'Loan'} Enquiry – Get Credit Admin`,

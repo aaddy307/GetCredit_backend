@@ -62,6 +62,9 @@ export const sendAdminNotification = async (enquiry) => {
       tenure: enquiry.tenure || enquiry.tenureYears || undefined,
       tenureUnit: enquiry.tenureUnit || undefined,
       interestRate: enquiry.interestRate || undefined,
+      propertyValue: enquiry.propertyValue || undefined,
+      propertyType: enquiry.propertyType || enquiry.mortgagePropertyType || undefined,
+      employmentType: enquiry.employmentType || undefined,
       source: enquiry.leadSource || 'Website',
       createdAt: enquiry.createdAt,
     });
