@@ -29,4 +29,5 @@ coverage/
 # Misc
 *.pem
 
+# Seed data
 seed-data/
