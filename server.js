@@ -4,6 +4,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import connectDB from './config/db.js';
 import Admin from './models/Admin.js';
+import { getCSRFTokenForClient, csrfMiddleware } from './middleware/csrfMiddleware.js';
+import { publicRateLimiter } from './middleware/publicRateLimiter.js';
 
 import adminRoutes from './routes/adminRoutes.js';
 import adminAnalyticsRoutes from './routes/adminAnalyticsRoutes.js';
@@ -44,11 +46,11 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"],
+      connectSrc: ["'self'", "https://resend.com"],
       frameAncestors: ["'none'"],
       baseUri: ["'self'"],
       formAction: ["'self'"],
@@ -140,14 +142,20 @@ if (process.env.NODE_ENV !== 'test') {
 
 app.use('/api/admin/login', failedLoginLimiter);
 
+app.get('/api/csrf-token', (req, res) => {
+  const token = getCSRFTokenForClient(req);
+  res.json({ token });
+});
+
+app.use('/api/enquiry', publicRateLimiter, csrfMiddleware, enquiryRoutes);
+app.use('/api/emi', publicRateLimiter, csrfMiddleware, emiEnquiryRoutes);
+app.use('/api/callback', publicRateLimiter, csrfMiddleware, callbackRoutes);
+app.use('/api/calculator', publicRateLimiter, calculatorRoutes);
+
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/analytics', adminAnalyticsRoutes);
 app.use('/api/admin/users', adminUsersRoutes);
-app.use('/api/enquiry', enquiryRoutes);
-app.use('/api/calculator', calculatorRoutes);
 app.use('/api/blogs', blogRoutes);
-app.use('/api/emi', emiEnquiryRoutes);
-app.use('/api/callback', callbackRoutes);
 app.use('/api/admin', adminStatsRoutes);
 app.use('/api/admin', searchRoutes);
 app.use('/api/admin/notifications', notificationRoutes);
