@@ -31,17 +31,7 @@ const personalLoanEnquirySchema = new mongoose.Schema({
     type: Number,
     required: [true, 'Loan amount is required'],
     min: [10000, 'Loan amount must be at least ₹10,000'],
-    validate: {
-      validator: function(v) {
-        if ((this.employmentType === 'Self-Employed' || this.employmentType === 'Business Owner') && v > 1000000) {
-          throw new Error('Loan amount cannot exceed ₹10 lakhs for Non-Salaried applicants');
-        }
-        if (v > 10000000) {
-          throw new Error('Loan amount cannot exceed ₹1 Crore');
-        }
-        return true;
-      }
-    }
+    max: [10000000, 'Loan amount cannot exceed ₹1 Crore']
   },
   employmentType: {
     type: String,
