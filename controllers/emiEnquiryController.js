@@ -43,6 +43,13 @@ const validateEnquiry = (data) => {
 
 const createLoanEnquiry = (Model, extraFields, loanTypeLabel) => async (req, res) => {
   try {
+    if (req.body.websiteUrl) {
+      return res.status(201).json({
+        success: true,
+        message: 'Enquiry submitted successfully'
+      });
+    }
+
     const errors = validateEnquiry(req.body);
     if (errors.length > 0) {
       return res.status(400).json({ success: false, errors });
@@ -83,7 +90,7 @@ const createLoanEnquiry = (Model, extraFields, loanTypeLabel) => async (req, res
 
     res.status(201).json({ success: true, message: 'Enquiry submitted successfully', data: enquiry, ...(emailWarning ? { emailWarning } : {}) });
   } catch (error) {
-    res.status(500).json({ success: false, errors: ['Server error. Please try again.'] });
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 

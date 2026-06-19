@@ -1000,12 +1000,9 @@ describe('CALCULATOR: DownPayment', () => {
     const res = await request(app)
       .post('/api/calculator/home-loan')
       .send({ ...validPayload, downPayment: 6000000 });
-    expect(res.status).toBe(200);
-    // Principal becomes negative — EMI calculation still runs
-    expect(res.body.principal).toBe(-1000000);
-    // This is a minor bug: negative principal should be rejected
-    // But for now we test current behavior
-    expect(res.body.monthlyEMI).toBeDefined();
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toContain('greater than down payment');
   });
 });
 

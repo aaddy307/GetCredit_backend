@@ -1,167 +1,69 @@
-const calculateLoanDetails = (principal, annualRate, years) => {
-  const monthlyRate = annualRate / 12 / 100;
-  const months = years * 12;
+import { calculateEMIFromRequest, validateLoanAmount } from '../utils/emiCalculator.js';
 
-  let emi;
-  if (monthlyRate === 0) {
-    emi = principal / months;
-  } else {
-    emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) /
-          (Math.pow(1 + monthlyRate, months) - 1);
-  }
-
-  const totalAmount = Math.round(emi * months);
-  const totalInterest = totalAmount - principal;
-
-  return {
-    monthlyEMI: Math.round(emi),
-    totalAmount: totalAmount,
-    totalInterest: totalInterest
-  };
-};
-
-export const calculateHomeLoan = (req, res) => {
+const handleCalculation = (loanType, hasDownPayment = false) => (req, res) => {
   try {
-    const { loanAmount, downPayment = 0, interestRate, tenure } = req.body;
+    const { loanAmount, downPayment = 0, interestRate, tenure, tenureUnit = 'Years' } = req.body;
 
     if (!loanAmount || !interestRate || !tenure) {
-      return res.status(400).json({ success: false, message: 'Please provide loanAmount, interestRate, and tenure' });
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide loanAmount, interestRate, and tenure'
+      });
     }
 
     if (loanAmount <= 0 || tenure <= 0) {
-      return res.status(400).json({ success: false, message: 'Loan amount and tenure must be positive' });
+      return res.status(400).json({
+        success: false,
+        message: 'Loan amount and tenure must be positive'
+      });
     }
 
     if (interestRate < 0) {
-      return res.status(400).json({ success: false, message: 'Interest rate cannot be negative' });
+      return res.status(400).json({
+        success: false,
+        message: 'Interest rate cannot be negative'
+      });
     }
 
-    const principal = loanAmount - downPayment;
-    const result = calculateLoanDetails(principal, interestRate, tenure);
+    const validation = validateLoanAmount(Number(loanAmount), loanType);
+    if (!validation.valid) {
+      return res.status(400).json({
+        success: false,
+        message: validation.message
+      });
+    }
 
-    res.json({ success: true, ...result, principal: principal, tenure: parseInt(tenure) });
+    const requestData = {
+      loanAmount,
+      downPayment: hasDownPayment ? downPayment : 0,
+      interestRate,
+      tenure,
+      tenureUnit,
+    };
+
+    const result = calculateEMIFromRequest(requestData);
+
+    if (result.error) {
+      return res.status(400).json({
+        success: false,
+        message: result.error
+      });
+    }
+
+    res.json({
+      success: true,
+      ...result,
+      tenure: parseInt(tenure),
+      loanType,
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
-export const calculateLAP = (req, res) => {
-  try {
-    const { loanAmount, interestRate, tenure } = req.body;
-
-    if (!loanAmount || !interestRate || !tenure) {
-      return res.status(400).json({ success: false, message: 'Please provide loanAmount, interestRate, and tenure' });
-    }
-
-    if (loanAmount <= 0 || tenure <= 0) {
-      return res.status(400).json({ success: false, message: 'Loan amount and tenure must be positive' });
-    }
-
-    if (interestRate < 0) {
-      return res.status(400).json({ success: false, message: 'Interest rate cannot be negative' });
-    }
-
-    const result = calculateLoanDetails(loanAmount, interestRate, tenure);
-
-    res.json({ success: true, ...result, principal: loanAmount, tenure: parseInt(tenure) });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
-  }
-};
-
-export const calculateEducationLoan = (req, res) => {
-  try {
-    const { loanAmount, interestRate, tenure } = req.body;
-
-    if (!loanAmount || !interestRate || !tenure) {
-      return res.status(400).json({ success: false, message: 'Please provide loanAmount, interestRate, and tenure' });
-    }
-
-    if (loanAmount <= 0 || tenure <= 0) {
-      return res.status(400).json({ success: false, message: 'Loan amount and tenure must be positive' });
-    }
-
-    if (interestRate < 0) {
-      return res.status(400).json({ success: false, message: 'Interest rate cannot be negative' });
-    }
-
-    const result = calculateLoanDetails(loanAmount, interestRate, tenure);
-
-    res.json({ success: true, ...result, principal: loanAmount, tenure: parseInt(tenure) });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
-  }
-};
-
-export const calculatePersonalLoan = (req, res) => {
-  try {
-    const { loanAmount, interestRate, tenure } = req.body;
-
-    if (!loanAmount || !interestRate || !tenure) {
-      return res.status(400).json({ success: false, message: 'Please provide loanAmount, interestRate, and tenure' });
-    }
-
-    if (loanAmount <= 0 || tenure <= 0) {
-      return res.status(400).json({ success: false, message: 'Loan amount and tenure must be positive' });
-    }
-
-    if (interestRate < 0) {
-      return res.status(400).json({ success: false, message: 'Interest rate cannot be negative' });
-    }
-
-    const result = calculateLoanDetails(loanAmount, interestRate, tenure);
-
-    res.json({ success: true, ...result, principal: loanAmount, tenure: parseInt(tenure) });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
-  }
-};
-
-export const calculateBusinessLoan = (req, res) => {
-  try {
-    const { loanAmount, interestRate, tenure } = req.body;
-
-    if (!loanAmount || !interestRate || !tenure) {
-      return res.status(400).json({ success: false, message: 'Please provide loanAmount, interestRate, and tenure' });
-    }
-
-    if (loanAmount <= 0 || tenure <= 0) {
-      return res.status(400).json({ success: false, message: 'Loan amount and tenure must be positive' });
-    }
-
-    if (interestRate < 0) {
-      return res.status(400).json({ success: false, message: 'Interest rate cannot be negative' });
-    }
-
-    const result = calculateLoanDetails(loanAmount, interestRate, tenure);
-
-    res.json({ success: true, ...result, principal: loanAmount, tenure: parseInt(tenure) });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
-  }
-};
-
-export const calculateVehicleLoan = (req, res) => {
-  try {
-    const { loanAmount, downPayment = 0, interestRate, tenure } = req.body;
-
-    if (!loanAmount || !interestRate || !tenure) {
-      return res.status(400).json({ success: false, message: 'Please provide loanAmount, interestRate, and tenure' });
-    }
-
-    if (loanAmount <= 0 || tenure <= 0) {
-      return res.status(400).json({ success: false, message: 'Loan amount and tenure must be positive' });
-    }
-
-    if (interestRate < 0) {
-      return res.status(400).json({ success: false, message: 'Interest rate cannot be negative' });
-    }
-
-    const principal = loanAmount - downPayment;
-    const result = calculateLoanDetails(principal, interestRate, tenure);
-
-    res.json({ success: true, ...result, principal: principal, tenure: parseInt(tenure) });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
-  }
-};
+export const calculateHomeLoan = handleCalculation('Home Loan', true);
+export const calculateLAP = handleCalculation('Loan Against Property', false);
+export const calculateEducationLoan = handleCalculation('Education Loan', false);
+export const calculatePersonalLoan = handleCalculation('Personal Loan', false);
+export const calculateBusinessLoan = handleCalculation('Business Loan', false);
+export const calculateVehicleLoan = handleCalculation('Vehicle Loan', true);

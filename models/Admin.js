@@ -86,9 +86,18 @@ const adminSchema = new mongoose.Schema({
     default: null
   },
   sessionTokens: [{
-    token: String,
+    token: {
+      type: String,
+      required: true
+    },
+    refreshToken: {
+      type: String,
+      required: true
+    },
     createdAt: { type: Date, default: Date.now },
-    lastUsed: { type: Date, default: Date.now }
+    lastUsed: { type: Date, default: Date.now },
+    userAgent: String,
+    ip: String
   }],
   allTokensInvalidated: {
     type: Boolean,

@@ -18,6 +18,16 @@ function sanitizeHtml(input) {
     .replace(/onerror\s*=/gi, '');
 }
 
+function sanitizeSubject(input) {
+  if (typeof input !== 'string') return '';
+  return input
+    .substring(0, 200)
+    .replace(/<[^>]*>/g, '')
+    .replace(/[\r\n]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 async function sendEmail({ to, subject, html }) {
   if (isTest) return;
 
@@ -83,10 +93,11 @@ export async function sendEnquiryAdmin({ name, phone, email, city, loanType, loa
 }
 
 export async function sendAdminComposeEmail({ to, subject, body }) {
+  const sanitizedSubject = sanitizeSubject(subject);
   const html = buildAdminComposeEmail({ body: sanitizeHtml(body).replace(/\n/g, '<br>') });
   return sendEmail({
     to,
-    subject,
+    subject: sanitizedSubject,
     html,
   });
 }
