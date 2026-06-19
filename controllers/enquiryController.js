@@ -105,14 +105,30 @@ export const createEnquiry = async (req, res) => {
       enquiryData.propertyValue = propertyValue ? Number(propertyValue) : undefined;
     }
 
-    const existingToday = await Enquiry.findOne({
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const existingByEmail = await Enquiry.findOne({
       email: email.toLowerCase().trim(),
-      createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
+      createdAt: { $gte: today, $lt: tomorrow }
     });
-    if (existingToday) {
+    if (existingByEmail) {
       return res.status(409).json({
         success: false,
-        message: 'An enquiry with this email was already submitted today.'
+        message: 'This email is already registered today. Our executive will contact you shortly.'
+      });
+    }
+
+    const existingByPhone = await Enquiry.findOne({
+      phone: sanitizeString(phone),
+      createdAt: { $gte: today, $lt: tomorrow }
+    });
+    if (existingByPhone) {
+      return res.status(409).json({
+        success: false,
+        message: 'This phone number is already registered today. Our executive will contact you shortly.'
       });
     }
 

@@ -57,8 +57,8 @@ describe('Callback Endpoints', () => {
       const res = await request(app)
         .post('/api/callback')
         .send(validCallback);
-      expect(res.status).toBe(400);
-      expect(res.body.message).toContain('already submitted today');
+      expect(res.status).toBe(409);
+      expect(res.body.message).toContain('already registered today');
     });
 
     it('should allow same phone on different day (by clearing data)', async () => {

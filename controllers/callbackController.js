@@ -48,9 +48,9 @@ export const createCallbackRequest = async (req, res) => {
     });
 
     if (existingToday) {
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
-        message: 'A callback request with this phone number was already submitted today.'
+        message: 'This phone number is already registered today. Our executive will contact you shortly.'
       });
     }
 

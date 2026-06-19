@@ -61,6 +61,33 @@ const createLoanEnquiry = (Model, extraFields, loanTypeLabel) => async (req, res
       tenureUnit, ...rest
     } = req.body;
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const existingByPhone = await Model.findOne({
+      mobile,
+      createdAt: { $gte: today, $lt: tomorrow }
+    });
+    if (existingByPhone) {
+      return res.status(409).json({
+        success: false,
+        message: 'This phone number is already registered today. Our executive will contact you shortly.'
+      });
+    }
+
+    const existingByEmail = await Model.findOne({
+      email: email.toLowerCase().trim(),
+      createdAt: { $gte: today, $lt: tomorrow }
+    });
+    if (existingByEmail) {
+      return res.status(409).json({
+        success: false,
+        message: 'This email is already registered today. Our executive will contact you shortly.'
+      });
+    }
+
     const enquiry = await Model.create({
       fullName, mobile, email, city, loanAmount,
       interestRate, tenureYears, calculatedEMI,

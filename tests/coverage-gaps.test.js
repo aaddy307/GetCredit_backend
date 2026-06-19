@@ -247,9 +247,9 @@ describe('LEADS: Admin All Leads CRUD Gaps', () => {
       await request(app)
         .post('/api/enquiry')
         .send({
-          fullName: `User ${i}`,
-          phone: `987654321${i}`,
-          email: `user${i}@example.com`,
+          fullName: `PageUser ${i}`,
+          phone: `900000001${i}`,
+          email: `pageuser${i}@example.com`,
           city: 'Mumbai',
           loanType: 'Personal Loan',
           loanAmount: 500000,
@@ -566,7 +566,7 @@ describe('ENQUIRY: Duplicate, Honeypot, Update, Delete Gaps', () => {
         loanAmount: 500000,
       });
     expect(res.status).toBe(409);
-    expect(res.body.message).toContain('already submitted today');
+    expect(res.body.message).toContain('already registered today');
   });
 
   it('honeypot websiteUrl should silently succeed', async () => {

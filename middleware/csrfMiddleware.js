@@ -70,8 +70,6 @@ export const verifyCSRFToken = (token, sessionId) => {
       return { valid: false, reason: 'Token not found' };
     }
 
-    tokens.delete(token);
-
     return { valid: true };
   } catch {
     return { valid: false, reason: 'Token verification failed' };
