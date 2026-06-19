@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js",
+    "dev": "node --watch server.js",
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest --runInBand --forceExit",
     "test:watch": "NODE_OPTIONS='--experimental-vm-modules' jest --runInBand --watch"
   },
