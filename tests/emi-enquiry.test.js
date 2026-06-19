@@ -63,6 +63,16 @@ describe('EMI Enquiry Endpoints', () => {
           .send(payload);
         expect(res.status).toBe(400);
       });
+
+      if (path === 'personal-loan') {
+        it('should reject loan amount exceeding 10 Lakhs for Self-Employed', async () => {
+          const res = await request(app)
+            .post(`/api/emi/${path}`)
+            .send({ ...validPayload, employmentType: 'Self-Employed', loanAmount: 1100000 });
+          expect(res.status).toBe(400);
+          expect(res.body.errors[0]).toContain('cannot exceed ₹10 lakhs');
+        });
+      }
     });
   });
 

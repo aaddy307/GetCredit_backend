@@ -49,7 +49,17 @@ const enquirySchema = new mongoose.Schema({
     type: Number,
     default: 0,
     min: [10000, 'Loan amount must be at least ₹10,000'],
-    max: [100000000, 'Loan amount cannot exceed ₹10 Crore']
+    validate: {
+      validator: function(v) {
+        if (this.loanType === 'Non-Salaried Loan' && v > 1000000) {
+          throw new Error('Loan amount cannot exceed ₹10 lakhs');
+        }
+        if (v > 100000000) {
+          throw new Error('Loan amount cannot exceed ₹10 Crore');
+        }
+        return true;
+      }
+    }
   },
   callbackStatus: {
     type: String,

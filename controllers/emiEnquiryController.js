@@ -117,6 +117,10 @@ const createLoanEnquiry = (Model, extraFields, loanTypeLabel) => async (req, res
 
     res.status(201).json({ success: true, message: 'Enquiry submitted successfully', data: enquiry, ...(emailWarning ? { emailWarning } : {}) });
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(e => `${e.path}: ${e.message}`);
+      return res.status(400).json({ success: false, errors });
+    }
     res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };

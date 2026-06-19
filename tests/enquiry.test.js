@@ -64,6 +64,14 @@ describe('Enquiry Endpoints', () => {
         .send({ ...validEnquiry, phone: '12345' });
       expect(res.status).toBe(400);
     });
+
+    it('should reject Non-Salaried Loan exceeding 10 Lakhs', async () => {
+      const res = await request(app)
+        .post('/api/enquiry')
+        .send({ ...validEnquiry, loanType: 'Non-Salaried Loan', loanAmount: 1100000 });
+      expect(res.status).toBe(400);
+      expect(res.body.message).toContain('Loan amount cannot exceed ₹10 lakhs');
+    });
   });
 
   describe('GET /api/enquiry (Protected)', () => {
