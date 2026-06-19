@@ -19,7 +19,7 @@ export const protect = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Invalid token type' });
     }
 
-    const admin = await Admin.findById(decoded.id);
+    const admin = await Admin.findById(decoded.id).select('-password');
 
     if (!admin) {
       return res.status(401).json({ success: false, message: 'Not authorized, admin not found' });
@@ -56,12 +56,13 @@ export const optionalAuth = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const admin = await Admin.findById(decoded.id);
+    const admin = await Admin.findById(decoded.id).select('-password');
 
     if (admin && !admin.allTokensInvalidated) {
       req.admin = admin;
     }
-  } catch {
+  } catch (error) {
+    // Token verification failed, continue without admin
   }
 
   next();

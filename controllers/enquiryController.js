@@ -110,10 +110,17 @@ export const createEnquiry = async (req, res) => {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const existingByEmail = await Enquiry.findOne({
-      email: email.toLowerCase().trim(),
-      createdAt: { $gte: today, $lt: tomorrow }
-    });
+    const [existingByEmail, existingByPhone] = await Promise.all([
+      Enquiry.findOne({
+        email: email.toLowerCase().trim(),
+        createdAt: { $gte: today, $lt: tomorrow }
+      }),
+      Enquiry.findOne({
+        phone: sanitizeString(phone),
+        createdAt: { $gte: today, $lt: tomorrow }
+      })
+    ]);
+
     if (existingByEmail) {
       return res.status(409).json({
         success: false,
@@ -121,10 +128,6 @@ export const createEnquiry = async (req, res) => {
       });
     }
 
-    const existingByPhone = await Enquiry.findOne({
-      phone: sanitizeString(phone),
-      createdAt: { $gte: today, $lt: tomorrow }
-    });
     if (existingByPhone) {
       return res.status(409).json({
         success: false,

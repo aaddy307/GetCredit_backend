@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import connectDB from './config/db.js';
 import Admin from './models/Admin.js';
+import { logger } from './utils/logger.js';
 import { getCSRFTokenForClient, csrfMiddleware } from './middleware/csrfMiddleware.js';
 import { publicRateLimiter } from './middleware/publicRateLimiter.js';
 
@@ -34,10 +35,10 @@ const migrateRoles = async () => {
       { $set: { role: 'admin' } }
     );
     if (result.modifiedCount > 0) {
-      console.log(`Migrated ${result.modifiedCount} admin(s) to new role schema`);
+      logger.info(`Migrated ${result.modifiedCount} admin(s) to new role schema`);
     }
   } catch (err) {
-    console.error('Role migration error:', err.message);
+    logger.error('Role migration error', { error: err, message: err.message });
   }
 };
 
@@ -176,8 +177,13 @@ app.use('/api/*', (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ success: false, message: 'Something went wrong!' });
+  logger.error('Unhandled error', { error: err, stack: err.stack, path: req.path, method: req.method });
+  res.status(err.status || 500).json({
+    success: false,
+    message: process.env.NODE_ENV === 'production'
+      ? 'Something went wrong!'
+      : err.message
+  });
 });
 
 const closeServers = () => {
@@ -188,7 +194,7 @@ process.on('SIGTERM', closeServers);
 process.on('SIGINT', closeServers);
 
 process.on('unhandledRejection', (err) => {
-  console.error('Unhandled Rejection:', err.message);
+  logger.error('Unhandled Rejection', { error: err, message: err.message });
 });
 
 const PORT = process.env.PORT || 5000;
@@ -197,7 +203,7 @@ const start = async () => {
   await connectDB();
   await migrateRoles();
   app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    logger.info(`Server running on port ${PORT}`);
   });
 };
 

@@ -66,10 +66,17 @@ const createLoanEnquiry = (Model, extraFields, loanTypeLabel) => async (req, res
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const existingByPhone = await Model.findOne({
-      mobile,
-      createdAt: { $gte: today, $lt: tomorrow }
-    });
+    const [existingByPhone, existingByEmail] = await Promise.all([
+      Model.findOne({
+        mobile,
+        createdAt: { $gte: today, $lt: tomorrow }
+      }),
+      Model.findOne({
+        email: email.toLowerCase().trim(),
+        createdAt: { $gte: today, $lt: tomorrow }
+      })
+    ]);
+
     if (existingByPhone) {
       return res.status(409).json({
         success: false,
@@ -77,10 +84,6 @@ const createLoanEnquiry = (Model, extraFields, loanTypeLabel) => async (req, res
       });
     }
 
-    const existingByEmail = await Model.findOne({
-      email: email.toLowerCase().trim(),
-      createdAt: { $gte: today, $lt: tomorrow }
-    });
     if (existingByEmail) {
       return res.status(409).json({
         success: false,

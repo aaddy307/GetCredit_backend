@@ -80,16 +80,21 @@ blogSchema.pre('save', async function(next) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
     if (!baseSlug) baseSlug = 'post';
-    let slug = baseSlug;
-    let counter = 2;
-    const existing = await mongoose.model('Blog').findOne({ slug, _id: { $ne: this._id } }).exec();
-    if (existing) {
-      while (await mongoose.model('Blog').findOne({ slug, _id: { $ne: this._id } }).exec()) {
-        slug = `${baseSlug}-${counter}`;
-        counter++;
-      }
+
+    const generateUniqueSlug = async (base, count = 1) => {
+      const slug = count === 1 ? base : `${base}-${count}`;
+      const exists = await mongoose.model('Blog').findOne({
+        slug,
+        _id: { $ne: this._id }
+      }).lean();
+      return exists ? generateUniqueSlug(base, count + 1) : slug;
+    };
+
+    try {
+      this.slug = await generateUniqueSlug(baseSlug);
+    } catch (err) {
+      return next(err);
     }
-    this.slug = slug;
   }
   next();
 });
