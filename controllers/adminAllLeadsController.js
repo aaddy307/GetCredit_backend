@@ -123,15 +123,34 @@ export const updateLead = async (req, res) => {
 
     const Model = modelMap[_collection];
 
-    if (_collection !== 'enquiries' && updateData.phone) {
-      updateData.mobile = updateData.phone;
-      delete updateData.phone;
+    // Clean up empty enum fields to avoid mongoose validation errors
+    const enumFields = ['employmentType', 'propertyType', 'mortgagePropertyType', 'qualification', 'degree', 'vehicleType'];
+    for (const key of enumFields) {
+      if (updateData[key] === '') {
+        delete updateData[key];
+      }
+    }
+
+    if (_collection !== 'enquiries') {
+      if (updateData.phone) {
+        updateData.mobile = updateData.phone;
+        delete updateData.phone;
+      }
+      if (updateData.tenure !== undefined) {
+        updateData.tenureYears = Number(updateData.tenure);
+      }
+      if (updateData.emi !== undefined) {
+        updateData.calculatedEMI = Number(updateData.emi);
+      }
+      if (_collection === 'loan_against_property' && updateData.propertyType !== undefined) {
+        updateData.mortgagePropertyType = updateData.propertyType;
+      }
     }
 
     const ALLOWED_FIELDS = [
       'fullName', 'phone', 'mobile', 'email', 'city', 'loanType', 'loanAmount', 'status', 'notes', 'leadSource', 
-      'tenure', 'tenureUnit', 'propertyValue', 'propertyType', 'employmentType', 'propertyLocation', 
-      'qualification', 'degree', 'institutionName', 'businessVintage', 'vehicleType', 'downPayment', 'emi'
+      'tenure', 'tenureYears', 'tenureUnit', 'propertyValue', 'propertyType', 'mortgagePropertyType', 'employmentType', 'propertyLocation', 
+      'qualification', 'degree', 'institutionName', 'businessVintage', 'vehicleType', 'downPayment', 'emi', 'calculatedEMI'
     ];
     const sanitized = {};
     for (const key of ALLOWED_FIELDS) {
@@ -149,6 +168,7 @@ export const updateLead = async (req, res) => {
 
     res.json({ success: true, message: 'Lead updated successfully' });
   } catch (error) {
+    console.error('Error in updateLead:', error);
     res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
