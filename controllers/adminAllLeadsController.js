@@ -32,6 +32,14 @@ const normalizeLead = (doc, collection, loanType, source) => ({
   propertyValue: doc.propertyValue || null,
   propertyType: doc.propertyType || doc.mortgagePropertyType || '',
   employmentType: doc.employmentType || '',
+  propertyLocation: doc.propertyLocation || '',
+  qualification: doc.qualification || '',
+  degree: doc.degree || doc.degreeType || '',
+  institutionName: doc.institutionName || '',
+  businessVintage: doc.businessVintage || null,
+  vehicleType: doc.vehicleType || '',
+  downPayment: doc.downPayment || 0,
+  emi: doc.emi || doc.calculatedEMI || 0,
   createdAt: doc.createdAt,
   _collection: collection,
   _isEMI: collection !== 'enquiries',
@@ -120,7 +128,11 @@ export const updateLead = async (req, res) => {
       delete updateData.phone;
     }
 
-    const ALLOWED_FIELDS = ['fullName', 'phone', 'mobile', 'email', 'city', 'loanType', 'loanAmount', 'status', 'notes', 'leadSource', 'tenure', 'tenureUnit'];
+    const ALLOWED_FIELDS = [
+      'fullName', 'phone', 'mobile', 'email', 'city', 'loanType', 'loanAmount', 'status', 'notes', 'leadSource', 
+      'tenure', 'tenureUnit', 'propertyValue', 'propertyType', 'employmentType', 'propertyLocation', 
+      'qualification', 'degree', 'institutionName', 'businessVintage', 'vehicleType', 'downPayment', 'emi'
+    ];
     const sanitized = {};
     for (const key of ALLOWED_FIELDS) {
       if (updateData[key] !== undefined) {

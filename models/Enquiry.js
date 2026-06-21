@@ -146,6 +146,16 @@ const enquirySchema = new mongoose.Schema({
     type: Number,
     min: 0,
     max: 100000000
+  },
+  businessVintage: {
+    type: Number,
+    min: 0,
+    max: 50
+  },
+  vehicleType: {
+    type: String,
+    trim: true,
+    maxlength: 100
   }
 }, {
   timestamps: true

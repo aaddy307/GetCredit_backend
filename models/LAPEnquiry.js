@@ -50,9 +50,9 @@ const lapEnquirySchema = new mongoose.Schema({
   },
   interestRate: {
     type: Number,
-    required: [true, 'Interest rate is required'],
     min: 0,
-    max: 50
+    max: 50,
+    default: 7.5
   },
   tenureYears: {
     type: Number,

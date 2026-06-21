@@ -6,14 +6,15 @@ const ALLOWED_CREATE_FIELDS = [
   'loanAmount', 'downPayment', 'interestRate', 'tenure', 'tenureUnit', 'emi',
   'qualification', 'degree', 'abroad', 'propertyType',
   'propertyLocation', 'employmentType', 'institutionName', 'propertyValue',
-  'websiteUrl'
+  'websiteUrl', 'businessVintage', 'vehicleType'
 ];
 
 const ALLOWED_UPDATE_FIELDS = [
   'fullName', 'phone', 'email', 'city', 'message', 'loanType',
   'loanAmount', 'status', 'notes', 'followUpDate', 'assignedTo',
   'propertyType', 'propertyLocation', 'employmentType',
-  'institutionName', 'propertyValue'
+  'institutionName', 'propertyValue', 'qualification', 'degree',
+  'businessVintage', 'vehicleType', 'downPayment', 'tenure', 'tenureUnit'
 ];
 
 const VALID_STATUSES = ['Pending', 'In Review', 'Approved', 'Rejected', 'Closed', 'Running', 'Completed'];
@@ -37,7 +38,8 @@ export const createEnquiry = async (req, res) => {
       fullName, phone, email, city, message, loanType, loanAmount,
       downPayment, interestRate, tenure, tenureUnit, emi,
       qualification, degree, abroad, propertyType, propertyLocation,
-      employmentType, institutionName, propertyValue, leadSource
+      employmentType, institutionName, propertyValue, leadSource,
+      businessVintage, vehicleType
     } = req.body;
 
     if (!fullName || !fullName.trim()) {
@@ -103,6 +105,8 @@ export const createEnquiry = async (req, res) => {
       }
       enquiryData.institutionName = institutionName ? sanitizeString(institutionName) : '';
       enquiryData.propertyValue = propertyValue ? Number(propertyValue) : undefined;
+      enquiryData.businessVintage = businessVintage ? Number(businessVintage) : undefined;
+      enquiryData.vehicleType = vehicleType ? sanitizeString(vehicleType) : '';
     }
 
     const today = new Date();
